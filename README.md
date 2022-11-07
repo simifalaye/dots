@@ -17,8 +17,17 @@
 # Install
 
 ```
-yadm clone --bootstrap <repo_url>
+yadm clone --bootstrap git@github.com:simifalaye/dots.git
 ```
+
+## Hide meta files
+
+To hide the README and LICENSE files from HOME:
+`yadm sparse-checkout reapply`
+To unhide them for editing:
+`yadm sparse-checkout disable`
+To stage them:
+`yadm add README.md LICENSE --sparse`
 
 # Graphical Applications
 
