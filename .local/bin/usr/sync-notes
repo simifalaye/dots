@@ -1,0 +1,43 @@
+#!/bin/bash
+
+NOTEBOOK_DIR="$ZK_NOTEBOOK_DIR"
+NOTEBOOK_GIT_DIR="$NOTEBOOK_DIR/.git"
+
+run_git ()
+{
+  echo "----------------------------------------"
+  echo "Running 'git $*'..."
+  echo "----------------------------------------"
+  out=$(git -C $NOTEBOOK_DIR "$@" 2>&1 >/dev/null)
+  status=$?
+  if [ $status -ne 0 ]; then
+    echo "ERROR: '$*' exited with an error." "${out}"
+    return 1
+  fi
+}
+
+# Main
+# ======
+
+# Check that notebook dir exists and is a git dir
+if [ ! -d "$NOTEBOOK_DIR" ] || [ ! -d "$NOTEBOOK_GIT_DIR" ]; then
+  echo "No notebook directory exists or is not a git dir"
+  exit 1
+fi
+
+# Make sure git is installed
+if ! command -v git >/dev/null; then
+  echo "Git not installed"
+  exit 1
+fi
+
+# Push changes if needed
+if [[ -n $(git -C $NOTEBOOK_DIR status --porcelain) ]]; then
+  datenow=$(date "+%Y-%m-%d %H:%M")
+  run_git add --all || exit $?
+  run_git commit -am "Automatic notes update on ${datenow}" || exit $?
+fi
+
+# Pull latest changes
+run_git pull --rebase || exit $?
+run_git push origin main || exit $?

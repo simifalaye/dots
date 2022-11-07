@@ -1,0 +1,47 @@
+#!/bin/bash
+# Save this file as ~/.config/yadm/bootstrap and make it executable. It will
+# execute all executable files (excluding templates and editor backups) in the
+# ~/.config/yadm/bootstrap.d directory when run.
+BOOTSTRAP_D="${BASH_SOURCE[0]}.d"
+if [[ ! -d "$BOOTSTRAP_D" ]]; then
+  echo "Error: bootstrap directory '$BOOTSTRAP_D' not found" >&2
+  exit 1
+fi
+
+HELPERS_D=${BOOTSTRAP_D}/helpers
+test -f ${HELPERS_D}/common.sh && source ${HELPERS_D}/common.sh
+
+# Main
+# ====
+
+# Setup user config
+conf_ephemeral=$(user_conf_read ephemeral)
+conf_headless=$(user_conf_read headless)
+if [ -z "${conf_ephemeral}" ]; then
+    if prompt_yes "Is this machine ephemeral? "; then
+        conf_ephemeral=y
+        conf_headless=y
+    else
+        conf_ephemeral=n
+    fi
+    user_conf_write ephemeral ${conf_ephemeral}
+fi
+if [ -z ${conf_headless} ]; then
+    if prompt_yes "Is this machine headless? "; then
+        conf_headless=y
+    else
+        conf_headless=n
+    fi
+    user_conf_write headless ${conf_headless}
+fi
+
+# Run bootstrap scripts in alphabetical order
+set -eu
+find -L "$BOOTSTRAP_D" -type f | sort | while IFS= read -r bootstrap; do
+    if [[ -x "$bootstrap" && ! "$bootstrap" =~ "##" && ! "$bootstrap" =~ "~$" ]]; then
+        if ! HELPERS_D=${HELPERS_D} "$bootstrap"; then
+            echo "Error: bootstrap '$bootstrap' failed" >&2
+            exit 1
+        fi
+    fi
+done

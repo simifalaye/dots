@@ -1,0 +1,112 @@
+-- vim: ft=haskell
+
+Config {
+   -- appearance
+     font            = "xft:FiraCode Nerd Font:pixelsize=12:antialias=true:hinting=true"
+   , additionalFonts = [ "xft:monospace:pixelsize=15" ]
+   , bgColor         = "black"
+   , fgColor         = "#B8B8B8"
+   , position        = Bottom
+   , border          = NoBorder
+
+   -- layout
+   , sepChar  = "%"  -- delineator between plugin names and straight text
+   , alignSep = "}{" -- separator between left-right alignment
+   , template = "%UnsafeStdinReader% }{ \
+      \ %battery% | %memory% | %multicpu% | %date% ||%trayerpad%"
+
+   -- general behavior
+   , lowerOnStart     = True  -- send to bottom of window stack on start
+   , hideOnStart      = False -- start with window unmapped (hidden)
+   , allDesktops      = True  -- show on all desktops
+   , overrideRedirect = True  -- set the Override Redirect flag (Xlib)
+   , pickBroadest     = False -- choose widest display (multi-monitor)
+   , persistent       = True  -- enable/disable hiding (True = disabled)
+   , iconRoot         = "/home/simifa/.config/xmonad/xpm/"  -- location of .xpm icons
+
+   -- plugins
+   --   Numbers can be automatically colored according to their value. xmobar
+   --   decides color based on a three-tier/two-cutoff system, controlled by
+   --   command options:
+   --     --Low sets the low cutoff
+   --     --High sets the high cutoff
+   --
+   --     --low sets the color below --Low cutoff
+   --     --normal sets the color between --Low and --High cutoffs
+   --     --High sets the color above --High cutoff
+   --
+   --   The --template option controls how the plugin is displayed. Text
+   --   color can be set by enclosing in <fc></fc> tags. For more details
+   --   see http://projects.haskell.org/xmobar/#system-monitor-plugins.
+   , commands =
+
+        -- weather monitor
+        [ Run Weather "CYLW" [ "--template",
+                               " <skyCondition>, <fc=#7CAFC2><tempC></fc>°C"
+                             ] 36000
+
+        -- network activity monitor (dynamic interface resolution)
+        , Run DynNetwork     [ "--template" , "<dev>: <tx>kBs/<rx>kBs"
+                             , "--Low"      , "1000"       -- units: B/s
+                             , "--High"     , "5000"       -- units: B/s
+                             , "--low"      , "#3ed83e"
+                             , "--normal"   , "orange"
+                             , "--high"     , "#ce0000"
+                             ] 10
+
+        -- cpu activity monitor
+        , Run MultiCpu       [ "--template" , " <total0>%/<total1>%"
+                             , "--Low"      , "50"         -- units: %
+                             , "--High"     , "85"         -- units: %
+                             , "--low"      , "#3ed83e"
+                             , "--normal"   , "orange"
+                             , "--high"     , "#ce0000"
+                             ] 10
+
+        -- cpu core temperature monitor
+        , Run CoreTemp       [ "--template" , "Temp: <core0>°C|<core1>°C"
+                             , "--Low"      , "70"        -- units: °C
+                             , "--High"     , "80"        -- units: °C
+                             , "--low"      , "#3ed83e"
+                             , "--normal"   , "orange"
+                             , "--high"     , "#ce0000"
+                             ] 50
+
+        -- memory usage monitor
+        , Run Memory         [ "--template" ," <usedratio>%"
+                             , "--Low"      , "20"        -- units: %
+                             , "--High"     , "90"        -- units: %
+                             , "--low"      , "#A1B56C"
+                             , "--normal"   , "#F7CA88"
+                             , "--high"     , "#AB4642"
+                             ] 10
+
+        -- battery monitor
+        , Run Battery        [ "--template" , " <acstatus>"
+                             , "--Low"      , "10"        -- units: %
+                             , "--High"     , "80"        -- units: %
+                             , "--low"      , "#A1B56C"
+                             , "--normal"   , "#F7CA88"
+                             , "--high"     , "#AB4642"
+
+                             , "--" -- battery specific options
+                                       -- discharging status
+                                       , "-o", "<left>% (<timeleft>)"
+                                       -- AC "on" status
+                                       , "-O", "<fc=#F7CA88>Charging</fc>"
+                                       -- charged status
+                                       , "-i", "<fc=#A1B56C>Charged</fc>"
+                             ] 50
+        -- time and date indicator
+        --   (%F = y-m-d date, %a = day of week, %H:%M = h:m time)
+        , Run Date           "<fc=#B8B8B8>  %F  %H:%M</fc>" "date" 10
+
+        -- trayer padding
+        , Run Com            "trayer-padding-icon" [] "trayerpad" 10
+
+        -- xmonad input
+        -- , Run StdinReader
+        , Run UnsafeStdinReader
+
+        ]
+}

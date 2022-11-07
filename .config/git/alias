@@ -1,0 +1,23 @@
+# vim: filetype=gitconfig
+#
+# Alias configuration for git.
+#
+
+# Named aliases
+[alias]
+    # List aliases
+    alias = !git config --get-regexp alias | cut -b 7-
+    # Edit last commit
+    amend = commit --amend
+    # Amend but don't edit message
+    commend = commit --amend --no-edit
+
+    # Remove file(s) from Git but not from disk.
+    untrack = rm -r --cached --
+    # Unstage changes from the index.
+    unstage = reset HEAD --
+
+    # Reset branch
+    resetorigin = !git fetch origin && git reset --hard
+    # Pull rebase & submodule update
+    up = !git pull --rebase && git submodule update
