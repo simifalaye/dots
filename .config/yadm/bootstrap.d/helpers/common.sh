@@ -119,42 +119,6 @@ get_latest_github()
     echo "$(wget -q -O - ${url} | grep -Po '(?<="tag_name": ").*(?=")')"
 }
 
-# Install packages from the package list
-# Helper script that maintains a list of packages for install on any machine
-# but allows the caller to define how each package is installed (often dependent
-# on the distro). Source this script and define the functions to install each
-# package as "PKGS.<pkg_name>", then call "install_pkgs <headless> <eph>"
-# @param pkgslist: array of package definitions
-# @param headless: 'yes' if headless
-# @param ephemeral: 'yes' if ephemeral
-install_pkgs()
-{
-    local -n pkgslist=${1}
-    headless="${2}"
-    ephemeral="${3}"
-    # Determine which packages can be installed
-    for name in "${!pkgslist[@]}"; do
-        IFS=">" read -r -a arr <<< "${pkgslist[$name]}"
-        desc=${arr[0]}; src=${arr[1]}; cond=${arr[2]}; bin=${arr[3]};
-        # Check if we should not install
-        if ([ ${cond} = "1" ] && is_true ${ephemeral}) ||
-            ([ ${cond} = "2" ] && (is_true ${headless} || is_true ${ephemeral})); then
-            continue
-        elif is_callable ${bin}; then
-            step "Already installed ${green}${name}${cn}, skipping..."
-            continue
-        else
-            func="PKGS.${name}"
-            step "Installing ${green}${name}${cn}..."
-            if [[ $(type -t $func) != function ]]; then
-                err "No installer found for '${name}' (expected: ${func})"
-            else
-                $func
-            fi
-        fi
-    done
-}
-
 # Read user conf once and set
 Y_EPHEMERAL=$(user_conf_read ephemeral)
 Y_HEADLESS=$(user_conf_read headless)
