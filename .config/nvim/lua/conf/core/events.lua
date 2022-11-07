@@ -82,12 +82,3 @@ api.nvim_create_autocmd("BufEnter", {
     end
   end,
 })
-
--- Chezmoi specific settings
-if utils.executable("chezmoi") then
-  api.nvim_create_autocmd("BufWritePost", {
-    desc = "Run 'chezmoi apply...' on any non-hook file in the chezmoi dir",
-    pattern = { utils.dotpath() .. "/{run_}\\@!*" },
-    command = "silent! ! chezmoi apply --source-path %",
-  })
-end

@@ -29,16 +29,7 @@ M.config = function()
   require(fmt("%s.diagnostics", mod))()
 
   -- IMPORTANT: make sure to setup lua-dev BEFORE lspconfig
-  require("neodev").setup({
-    override = function(root_dir, library)
-      local utils = require("conf.utils")
-      -- Enable lua-dev for chezmoi
-      if require("neodev.util").has_file(root_dir, utils.dotpath()) then
-        library.enabled = true
-        library.plugins = true
-      end
-    end,
-  })
+  require("neodev").setup({})
 
   -- Default server options
   local options = {

@@ -33,16 +33,6 @@ M.join_paths = function(...)
   return result
 end
 
---- Get source path of dotfiles
---- @return string
-M.dotpath = function()
-  local path = M.join_paths(os.getenv("HOME"), ".local", "chezmoi")
-  if M.executable("chezmoi") then
-    path = fn.system("chezmoi source-path")
-  end
-  return path:gsub("[\n\r]", "")
-end
-
 -- Packer install path
 M.packer_dir =
   M.join_paths(fn.stdpath("data"), "site", "pack", "packer", "start")

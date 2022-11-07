@@ -93,15 +93,11 @@ M.config = function()
   )
   m.nnoremap("<leader>fc", "<cmd>Telescope commands<CR>", "Commands")
   m.nnoremap("<leader>fd", function()
-    assert(
-      utils.file_exists(utils.dotpath()),
-      "Dir does not exist: " .. utils.dotpath()
-    )
     require("telescope.builtin").find_files({
       prompt_title = "Dotfiles",
-      cwd = utils.dotpath(),
+      cwd = "~",
       hidden = true,
-      find_command = { "git", "ls-files" },
+      find_command = { "yadm", "ls-files" },
     })
   end, "Dotfiles")
   m.nnoremap("<leader>ff", "<cmd>Telescope find_files hidden=true no_ignore=true<CR>", "Files (all)")
