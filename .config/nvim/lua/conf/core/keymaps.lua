@@ -97,10 +97,24 @@ m.nnoremap("]ot", ":set noexpandtab<CR>", "expandtab")
 m.nnoremap("]t", ":tabprev<CR>", "Tab next")
 m.nnoremap("[t", ":tabnext<CR>", "Tab prev")
 
+-- Search and Replace
+-- 'c.' for word, 'c>' for WORD
+-- 'c.' in visual mode for selection
+m.nmap(
+  "c.",
+  [[:%s/\<<C-r><C-w>\>//g<Left><Left>]],
+  { desc = "search and replace word under cursor" }
+)
+m.nmap(
+  "c>",
+  [[:%s/\V<C-r><C-a>//g<Left><Left>]],
+  { desc = "search and replace WORD under cursor" }
+)
+
 -- Leader
 m.nnoremap("<leader><leader>", "<C-^>", "Last buffer")
 m.nnoremap("<leader>c", ":BufDel 0<CR>", "Close buffer")
--- m.nnoremap("<leader>q", ":ToggleList c<CR>", "Toggle Quickfix")
+m.nnoremap("<leader>q", ":ToggleList c<CR>", "Toggle Quickfix")
 m.nnoremap("<leader>R", ":Reload<CR>", "Reload config")
 -- m.nnoremap("<leader>x", ":BufDel 1<CR>", "Exit buffer (wipe)")
 
@@ -108,6 +122,7 @@ m.nnoremap("<leader>R", ":Reload<CR>", "Reload config")
 ------------------------------
 
 -- Remaps
+m.vnoremap(".", ":norm.<CR>") -- visual dot repeat
 m.vnoremap("$", "g_")
 m.vnoremap("<", "<gv")
 m.vnoremap(">", ">gv")

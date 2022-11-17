@@ -14,6 +14,8 @@ export RUSTUP_HOME="${XDG_DATA_HOME}/rustup"
 export CARGO_HOME="${XDG_DATA_HOME}/cargo"
 export GOPATH="${XDG_DATA_HOME}/go"
 export NPM_CONFIG_PREFIX="${XDG_DATA_HOME}/npm"
+mkdir -p ${XDG_DATA_HOME}/tig
+export PYTHONUSERBASE="${XDG_DATA_HOME}/python" && mkdir -p ${PYTHONUSERBASE}
 
 # XDG_CONFIG_HOME overrides: user-specific configuration
 export NPM_CONFIG_USERCONFIG="${XDG_CONFIG_HOME}/npm/npmrc"
@@ -29,6 +31,8 @@ export NODE_REPL_HISTORY="${XDG_STATE_HOME}/node/repl_history" \
 export ICEAUTHORITY="${XDG_CACHE_HOME}/ICEauthority"
 [ -f "$XDG_CACHE_HOME/Xauthority" ] \
     && export XAUTHORITY="${XDG_CACHE_HOME}/Xauthority" # X server auth cookie
+export CALCHISTFILE=${XDG_CACHE_HOME}/calc_history
+export PYTHONPYCACHEPREFIX="${XDG_CACHE_HOME}/python" && mkdir -p ${PYTHONPYCACHEPREFIX}
 
 # Paths
 # =======

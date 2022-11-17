@@ -15,7 +15,7 @@ M.config = function()
       timeout = 300,         -- timeout for clearing the highlight
     },
     clipboard = {
-      enabled = false
+      enabled = true
     },
     tmux = {
       enabled = true,
@@ -24,7 +24,7 @@ M.config = function()
     },
     osc52 = {
       enabled = true,
-      ssh_only = true,        -- OSC52 yank also in local sessions
+      ssh_only = false,        -- OSC52 yank also in local sessions
       silent = false,         -- false to disable the "n chars copied" echo
       echo_hl = "Directory",  -- highlight group of the echo message
     }

@@ -78,8 +78,12 @@ alias b='browse'
 alias e='edit'
 alias p='${PAGER}'
 
-# Git
+# Git/yadm
 alias g='git'
+alias y='yadm'
+
+# Cht.sh
+alias ch='cht.sh'
 
 # Command: Back up a file. Usage "backupthis <filename/directory>"
 backupthis() { cp -riv $1 ${1}-$(date +%Y%m%d%H%M).backup; }

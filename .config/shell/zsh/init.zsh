@@ -27,3 +27,4 @@ xsh module zim interactive
 
 # Load extra modules that provide and bind ZLE widgets
 xsh module fzf interactive
+xsh module zle interactive

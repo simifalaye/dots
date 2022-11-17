@@ -71,6 +71,7 @@ M.config = function()
 
   -- Setup keymaps
   local m = require("conf.utils.map")
+  m.nnoremap("<C-f>", "<cmd>Telescope live_grep<CR>", "Find text")
   m.nnoremap("<C-p>", "<cmd>Telescope find_files<CR>", "Find Files")
   m.nnoremap(
     "<leader>;",
@@ -80,11 +81,11 @@ M.config = function()
   m.nnoremap("<leader>:", "<cmd>Telescope command_history<CR>", "Find CmdHist")
   m.nnoremap("<leader>,", "<cmd>Telescope oldfiles<CR>", "Find Recent")
   m.nnoremap("<leader>.", "<cmd>Telescope resume<CR>", "Find resume")
-  m.nnoremap("<leader>/", "<cmd>Telescope live_grep<CR>", "Find text")
+  m.nnoremap("<leader>/", "<cmd>Telescope search_history<cr>", "SearchHist")
   m.group("<leader>f", "+find")
   m.nnoremap("<leader>f?", "<cmd>Telescope builtin<cr>", "Builtin")
-  m.nnoremap("<leader>f/", "<cmd>Telescope search_history<cr>", "SearchHist")
-  m.nnoremap("<leader>f'", "<cmd>Telescope registers<cr>", "Registers")
+  m.nnoremap("<leader>f'", "<cmd>Telescope marks<cr>", "Marks")
+  m.nnoremap("<leader>f\"", "<cmd>Telescope registers<cr>", "Registers")
   m.nnoremap("<leader>fa", "<cmd>Telescope autocommands<CR>", "Autocommands")
   m.nnoremap(
     "<leader>fb",
@@ -104,8 +105,7 @@ M.config = function()
   m.nnoremap("<leader>fh", "<cmd>Telescope help_tags<CR>", "Help")
   m.nnoremap("<leader>fH", "<cmd>Telescope highlights<CR>", "Highlights")
   m.nnoremap("<leader>fk", "<cmd>Telescope keymaps<CR>", "Keymaps")
-  m.nnoremap("<leader>fm", "<cmd>Telescope marks<CR>", "Marks")
-  m.nnoremap("<leader>fM", "<cmd>Telescope man_pages<CR>", "Man Pages")
+  m.nnoremap("<leader>fm", "<cmd>Telescope man_pages<CR>", "Man Pages")
   m.nnoremap("<leader>fo", "<cmd>Telescope vim_options<CR>", "Options")
   m.nnoremap("<leader>fq", "<cmd>Telescope quickfix<CR>", "Quickfix")
   m.nnoremap("<leader>fs", function()

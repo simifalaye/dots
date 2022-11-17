@@ -3,6 +3,9 @@
 # Configuration of the tmux theme.
 #
 
+# Base16-shell
+set -g allow-passthrough 1
+
 # Status bar
 set -g status           on
 set -g status-position  bottom

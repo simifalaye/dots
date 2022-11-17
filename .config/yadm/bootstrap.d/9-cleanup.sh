@@ -15,6 +15,10 @@ REMOVE=(
     ${HOME}/.tmux.conf
     ${HOME}/.ripgreprc
     ${HOME}/.wget-hsts
+    ${HOME}/.viminfo
+    ${HOME}/.tig_history
+    ${HOME}/.calc_history
+    ${HOME}/.python_history
 )
 
 # DIRECTORIES that should exactly match git (remove extra local files)
