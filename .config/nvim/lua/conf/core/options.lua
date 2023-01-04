@@ -67,9 +67,9 @@ opt.shortmess = opt.shortmess + { c = true }
 
 -- Perfomance
 opt.redrawtime = 1500
-opt.timeoutlen = 300
+opt.timeoutlen = 250
 opt.ttimeoutlen = 10
-opt.updatetime = 300
+opt.updatetime = 250
 
 -- Filetype
 g.do_filetype_lua = 1 -- use filetype.lua when possible

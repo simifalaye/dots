@@ -2,7 +2,7 @@ return {
   {
     "lewis6991/gitsigns.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
-    event = "BufWinEnter",
+    event = "BufReadPre",
     tag = "release", -- To use the latest release
     config = function()
       local gs = require("gitsigns")

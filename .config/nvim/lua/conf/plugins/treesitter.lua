@@ -63,10 +63,9 @@ return {
         incremental_selection = {
           enable = true,
           keymaps = {
-            init_selection = "<leader>v", -- init incremental selection
-            node_incremental = "v", -- increment to the upper parent node
-            node_decremental = "V", -- decrement to the previous child node
-            scope_incremental = "<C-v>", -- increment to the upper scope
+            init_selection = "<enter>", -- init incremental selection
+            node_incremental = "<enter>", -- increment to the upper parent node
+            node_decremental = "<backspace>", -- decrement to the previous child node
           },
         },
         rainbow = {

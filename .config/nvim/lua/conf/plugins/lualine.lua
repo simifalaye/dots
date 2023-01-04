@@ -7,6 +7,7 @@ return {
       options = {
         component_separators = "|",
         section_separators = "",
+        icons_enabled = true,
         globalstatus = true,
         disabled_filetypes = { statusline = { "dashboard", "lazy" } },
       },

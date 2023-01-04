@@ -18,7 +18,7 @@ xsh module -s posix zk interactive
 xsh module -s bash base16 interactive
 xsh module -s bash exa interactive
 xsh module -s bash ripgrep interactive
-xsh module -s bash tmux interactive:login
+xsh module -s bash tmux interactive
 xsh module zoxide interactive
 
 # Load plugin manager

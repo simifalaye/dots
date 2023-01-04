@@ -20,5 +20,5 @@ xsh module base16 interactive
 xsh module exa interactive
 xsh module fzf interactive
 xsh module ripgrep interactive
-xsh module tmux interactive:login
+xsh module tmux interactive
 xsh module zoxide interactive
