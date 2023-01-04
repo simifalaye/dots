@@ -52,7 +52,7 @@ api.nvim_create_user_command(
       end
     end
     if prefix == "l" and vim.tbl_isempty(fn.getloclist(0)) then
-      log.warn("Location List is Empty.", 2)
+      log.warn("Location List is Empty.")
       return
     end
 
@@ -113,7 +113,7 @@ api.nvim_create_user_command("BufDel", function(opt)
   if vim.api.nvim_buf_is_valid(bufnr) then
   ---@diagnostic disable-next-line: param-type-mismatch
     local _, err = pcall(vim.cmd, string.format("%s %d", killcmd, bufnr))
-    if not err == nil and not err == "" then
+    if err ~= nil and not err == "" then
       require("conf.utils.log").error(err)
     end
   end
@@ -153,7 +153,10 @@ api.nvim_create_user_command(
   -- Set the minimum log level
   -- @param opt table (1 arg) => lvl integer
   function(opt)
-    return log.set_min_log_level(tonumber(opt.args))
+    local lvl = tonumber(opt.args)
+    if type(lvl) == "number" then
+      return log.set_min_log_level(lvl)
+    end
   end,
   {
     desc = "Set minimum log level: 1 (debug), 2 (info), 3 (warn), 4 (error)",

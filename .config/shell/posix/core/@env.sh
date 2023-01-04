@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 #
 # Core configuration module
 #
@@ -19,13 +20,13 @@ path_remove () {
     local dir
     local var=${2:-PATH}
     # Bash has ${!var}, but this is not portable.
-    for dir in `indirect_expand "$var"`; do
+    for dir in $(indirect_expand "$var"); do
         IFS=''
         if [ "$dir" != "$1" ]; then
             newpath=$newpath:$dir
         fi
     done
-    export $var=${newpath#:}
+    export "$var"="${newpath#:}"
 }
 
 # Usage: path_prepend /path/to/bin [PATH]
@@ -37,8 +38,9 @@ path_prepend () {
     # remove it so we can move it to the front
     path_remove "$1" "$2"
     local var="${2:-PATH}"
-    local value=`indirect_expand "$var"`
-    export ${var}="${1}${value:+:${value}}"
+    local value
+    value=$(indirect_expand "$var")
+    export "${var}"="${1}${value:+:${value}}"
 }
 
 # Usage: pathappend /path/to/bin [PATH]
@@ -48,14 +50,16 @@ path_append () {
     [ -d "${1}" ] || return
     path_remove "${1}" "${2}"
     local var=${2:-PATH}
-    local value=`indirect_expand "$var"`
-    export $var="${value:+${value}:}${1}"
+    local value
+    value=$(indirect_expand "$var")
+    export "$var"="${value:+${value}:}${1}"
 }
 
 # Usage: ssource <file-1> ...
 ssource () {
     for src in "$@"; do
-        test -r $src && source $src || echo "Failed to source: $src"
+        # shellcheck disable=SC1090
+        test -r "$src" && source "$src" || echo "Failed to source: $src"
     done
 }
 
@@ -74,9 +78,9 @@ load_repo () {
     local dest=$2
     if [ ! -d "${dest}" ]; then
         echo "Installing ${repo}..."
-        mkdir -p ${dest}
+        mkdir -p "${dest}"
         git clone "https://github.com/${repo}" "${dest}" ||
-            >&2 echo "Failed to clone repo $url"
+            >&2 echo "Failed to clone repo $repo"
     fi
 }
 
@@ -84,11 +88,11 @@ load_repo () {
 # =========
 
 # Explicitly set XDG base dirs as they are needed later
-export XDG_CACHE_HOME="${HOME}/.cache" && mkdir -p ${XDG_CACHE_HOME}
-export XDG_CONFIG_HOME="${HOME}/.config" && mkdir -p ${XDG_CONFIG_HOME}
-export XDG_DATA_HOME="${HOME}/.local/share" && mkdir -p ${XDG_DATA_HOME}
-export XDG_STATE_HOME="${HOME}/.local/state" && mkdir -p ${XDG_STATE_HOME}
-export XDG_BIN_HOME="${HOME}/.local/bin" && mkdir -p ${XDG_BIN_HOME}
+export XDG_CACHE_HOME="${HOME}/.cache" && mkdir -p "${XDG_CACHE_HOME}"
+export XDG_CONFIG_HOME="${HOME}/.config" && mkdir -p "${XDG_CONFIG_HOME}"
+export XDG_DATA_HOME="${HOME}/.local/share" && mkdir -p "${XDG_DATA_HOME}"
+export XDG_STATE_HOME="${HOME}/.local/state" && mkdir -p "${XDG_STATE_HOME}"
+export XDG_BIN_HOME="${HOME}/.local/bin" && mkdir -p "${XDG_BIN_HOME}"
 
 # Create files/dirs with owner r/w permissions
 umask 0022

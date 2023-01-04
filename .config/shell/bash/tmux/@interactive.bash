@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 #
 # Tmux configuration module
 #
@@ -8,6 +9,7 @@ if ! is_callable tmux; then
 fi
 
 # Convenience aliases
+# shellcheck disable=SC2139
 alias tmux="tmux -2 -f '$TMUX_CONFIG'"
 alias tl="tmux ls"
 
@@ -16,9 +18,9 @@ alias tl="tmux ls"
 #   - If no name is provided, use fzf to select one
 tm() {
     [ -n "$TMUX" ] && change="switch-client" || change="attach-session"
-    if [ $1 ]; then
+    if [ "$1" ]; then
         tmux $change -t "$1" 2>/dev/null ||
-            (tmux new-session -d -s $1 && tmux $change -t "$1")
+            (tmux new-session -d -s "$1" && tmux $change -t "$1")
     elif is_callable fzf; then
         session=$(tmux list-sessions -F "#{session_name}" 2>/dev/null |
             fzf --exit-0) && tmux $change -t "$session" || echo "No sessions found."

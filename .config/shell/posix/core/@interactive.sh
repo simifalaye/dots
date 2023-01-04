@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 #
 # Core configuration module
 #
@@ -9,8 +10,9 @@
 [ ! "$TTY" ] && TTY="$(tty)"
 
 # Disable control flow (^S/^Q).
-[ -r "${TTY:-}" ] && [ -w "${TTY:-}" ] && command -v stty >/dev/null \
-    && stty -ixon <"$TTY" >"$TTY" || true
+if [ -r "${TTY:-}" ] && [ -w "${TTY:-}" ] && command -v stty >/dev/null; then
+    stty -ixon
+fi
 
 # General parameters and options.
 HISTFILE=        # in-memory history only
@@ -53,7 +55,7 @@ alias lt='ll -tr' # list sorted by modification time, most recent last
 alias mkdir='mkdir -pv'
 alias mkd='mkdir'
 alias rmd='rmdir'
-take() { [[ -n ${1} ]] && mkdir -p ${1} && builtin cd ${1}; }
+take() { [[ -n ${1} ]] && mkdir -p "${1}" && builtin cd "${1}" || return; }
 
 # Systemd convenience.
 alias sc='systemctl'
@@ -86,7 +88,7 @@ alias y='yadm'
 alias ch='cht.sh'
 
 # Command: Back up a file. Usage "backupthis <filename/directory>"
-backupthis() { cp -riv $1 ${1}-$(date +%Y%m%d%H%M).backup; }
+backupthis() { cp -riv "${1}" "${1}"-"$(date +%Y%m%d%H%M)".backup; }
 
 # Pager
 # =====
@@ -94,7 +96,7 @@ backupthis() { cp -riv $1 ${1}-$(date +%Y%m%d%H%M).backup; }
 # Return if requirements are not met
 if [ "$TERM" != "dumb" ]; then
     # Set default less options.
-    mkdir -p ${XDG_STATE_HOME}/less
+    mkdir -p "${XDG_STATE_HOME}"/less
     export LESSHISTFILE="${XDG_STATE_HOME}/less/history"
     export LESSKEY="${XDG_STATE_HOME}/less/key"
     export LESSHISTSIZE=50
@@ -115,5 +117,6 @@ fi
 # IMPORTANT: MUST BE AT THE END TO OVERRIDE
 
 if test -f "${HOME}/.shellconf.local"; then
+    # shellcheck disable=SC1091
     source "${HOME}/.shellconf.local"
 fi

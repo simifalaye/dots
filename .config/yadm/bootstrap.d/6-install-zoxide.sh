@@ -2,7 +2,8 @@
 #
 # Install zoxide
 #
-test -f ${HELPERS_D}/common.sh && source ${HELPERS_D}/common.sh
+# shellcheck disable=SC1091
+test -f "${HELPERS_D}"/common.sh && source "${HELPERS_D}"/common.sh
 
 # MAIN
 # ====

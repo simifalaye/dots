@@ -127,7 +127,7 @@ do
       return error("Invalid log level '" .. tostring(log_level_str) .. "'")
     end,
     --- Set the minimum log level
-    ---@param log_level integer
+    ---@param log_level number
     ---@return boolean true if successful
     set_min_log_level = function(log_level)
       if LogLevels.all[log_level] then

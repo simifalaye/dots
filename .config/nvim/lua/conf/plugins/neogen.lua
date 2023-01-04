@@ -7,7 +7,7 @@ return {
     cmd = { "Neogen" },
     init = function()
       local m = require("conf.utils.map")
-      m.nnoremap("<leader>a", "<cmd>Neogen<CR>", "Annotate doc")
+      m.nnoremap("<leader>a", "<cmd>Neogen<CR>", "Generate (a)nnotation")
     end,
     config = { snippet_engine = "luasnip" },
   },

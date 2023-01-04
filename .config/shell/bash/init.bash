@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 #
 # This file is sourced automatically by xsh if the current shell is `bash`
 #

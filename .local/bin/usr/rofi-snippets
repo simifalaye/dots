@@ -10,6 +10,6 @@
 # Outputs: None
 # Side-effect: Copies selection to clipboard
 
-selection=$(rofi -i -width 1000 -dmenu < ${HOME}/Documents/snippets.txt)
-text=$(echo $selection | sed 's/.*\: //')
+selection=$(rofi -i -width 1000 -dmenu < "${HOME}"/Documents/snippets.txt)
+text=${selection//*: /}
 echo -n "$text" | xclip -selection clipboard

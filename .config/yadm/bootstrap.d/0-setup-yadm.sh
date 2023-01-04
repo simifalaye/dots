@@ -2,7 +2,8 @@
 #
 # Yadm initialization
 #
-test -f ${HELPERS_D}/common.sh && source ${HELPERS_D}/common.sh
+# shellcheck disable=SC1091
+test -f "${HELPERS_D}"/common.sh && source "${HELPERS_D}"/common.sh
 
 # MAIN
 # ====
@@ -10,7 +11,7 @@ msg "Setting up yadm"
 
 # Because Git submodule commands cannot operate without a work tree, they must
 # be run from within $HOME (assuming this is the root of your dotfiles)
-cd "$HOME"
+cd "${HOME}" || exit
 
 step "Initializing submodules"
 yadm submodule update --recursive --init

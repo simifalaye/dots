@@ -14,7 +14,7 @@ _check() {
     command -v "${1}" > /dev/null
 }
 _run() {
-    _check "${1}" && ! pgrep -x "${1}" >/dev/null && ${@} &
+    _check "${1}" && ! pgrep -x "${1}" >/dev/null && "${@}" &
 }
 
 # Run
@@ -30,7 +30,7 @@ _check nitrogen && nitrogen --restore # Restore background settings
 wmname "LG3D" # Fix java apps
 
 # Run core apps
-_run dunst -config $HOME/.config/dunst/dunstrc
+_run dunst -config "$HOME"/.config/dunst/dunstrc
 _run xcompmgr -c -l0 -t0 -r0 -o.00
 
 # Run gnome apps (auth and keyring)

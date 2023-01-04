@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 #
 # Core configuration module for bash
 #
@@ -33,7 +34,7 @@ HISTIGNORE="&:ls:[bf]g:pwd:exit:cd .."
 HISTFILE="$HISTFILE_DIR/history"
 HISTSIZE=10000
 HISTFILESIZE=20000
-command mkdir -p ${HISTFILE_DIR}
+command mkdir -p "${HISTFILE_DIR}"
 
 # Color/Prompt
 # ==============

@@ -3,6 +3,7 @@
 
 # Globals
 # =========
+# shellcheck disable=SC2034
 BASH_COMP_DIR="/usr/share/bash-completion/completions"
 ZSH_COMP_DIR="/usr/local/share/zsh/site-functions"
 MAN_DIR="/usr/local/share/man/man1/"
@@ -43,13 +44,13 @@ err() {  echo -e "    ${red}ERROR${cn}: ${1}"; }
 user_conf_read()
 {
     key="${1}"
-    if [ ! -f ${USER_CONF_FILE} ]; then
+    if [ ! -f "${USER_CONF_FILE}" ]; then
         echo ""
         return 1
     fi
 
-    while read -r line; do declare "$line"; done <${USER_CONF_FILE}
-    eval val=\$$key
+    while read -r line; do declare "$line"; done <"${USER_CONF_FILE}"
+    eval val=\$"$key"
     echo "${val}"
 }
 
@@ -61,14 +62,14 @@ user_conf_write()
 {
     key="${1}"
     val="${2}"
-    if [ ! -f ${USER_CONF_FILE} ]; then
+    if [ ! -f "${USER_CONF_FILE}" ]; then
         mkdir -p "${USER_CONF_FILE%/*}" && touch "${USER_CONF_FILE}"
     fi
 
-    if grep -q "${key}=" ${USER_CONF_FILE}; then
-        sed -i '/'"${key}"'=/c\'"${key}=${val}"'' ${USER_CONF_FILE}
+    if grep -q "${key}=" "${USER_CONF_FILE}"; then
+        sed -i '/'"${key}"'=/ s/=.*/='"${val}"'/' "${USER_CONF_FILE}"
     else
-        echo "${key}=${val}" >> ${USER_CONF_FILE}
+        echo "${key}=${val}" >> "${USER_CONF_FILE}"
     fi
 }
 
@@ -78,7 +79,7 @@ user_conf_write()
 prompt_yes()
 {
     msg=${1}
-    read -p "${1}" -n 1 -r
+    read -p "${msg}" -n 1 -r
     echo    # (optional) move to a new line
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         return 1
@@ -116,7 +117,7 @@ get_latest_github()
     repo="${1}"
     cmd=""
     url="https://api.github.com/repos/${repo}/releases/latest"
-    echo "$(wget -q -O - ${url} | grep -Po '(?<="tag_name": ").*(?=")')"
+    wget -q -O - "${url}" | grep -Po '(?<="tag_name": ").*(?=")'
 }
 
 # Read user conf once and set
