@@ -16,5 +16,6 @@ export TMUX_DATA_DIR="${XDG_DATA_HOME}/tmux" && \
     mkdir -p "${TMUX_DATA_DIR}"
 
 # Config
-export TMUX_CONFIG="${TMUX_CONFIG_DIR}/main.tmux"
+# export TMUX_CONFIG="${TMUX_CONFIG_DIR}/main.tmux"
+export TMUX_CONFIG="${TMUX_CONFIG_DIR}/tmux.conf"
 export TMUX_CLIPBOARD="osc52"
