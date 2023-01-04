@@ -1,8 +1,5 @@
 local log = require("conf.utils.log")
 
-_G._store["colors"] = _G._store["colors"] or { colors = nil, scheme = nil }
-local colors_store = _G._store["colors"]
-
 local M = {}
 
 local function hl_by_name(name)
@@ -33,44 +30,7 @@ M.get_hl_fg = function(hlgroup, base)
   )
 end
 
-M.get_colors = function()
-  return colors_store.colors
-    or {
-      none = "NONE",
-      fg = hl_prop("Normal", "foreground"),
-      bg = hl_prop("Normal", "background"),
-      red = hl_prop("WarningMsg", "foreground"),
-      green = hl_prop("Question", "foreground"),
-      yellow = hl_prop("LineNr", "foreground"),
-      blue = hl_prop("EndOfBuffer", "foreground"),
-      magenta = hl_prop("Title", "foreground"),
-      cyan = hl_prop("Directory", "foreground"),
-      white = hl_prop("Normal", "foreground"),
-      white_1 = hl_prop("ModeMsg", "foreground"),
-      grey = hl_prop("SignColumn", "background"),
-      grey_1 = hl_prop("CursorColumn", "background"),
-      black = hl_prop("Normal", "background"),
-      black_1 = hl_prop("Normal", "background"),
-      accent = hl_prop("Tag", "foreground"),
-      accent_1 = hl_prop("Comment", "foreground"),
-    }
-end
-
-M.set_colors = function(value)
-  colors_store.colors =
-    vim.tbl_deep_extend("force", colors_store.colors or {}, value or {})
-end
-
-M.get_scheme = function()
-  return colors_store.scheme or "default"
-end
-
-M.set_scheme = function(value)
-  colors_store.scheme = value
-end
-
-M.apply_colorscheme = function()
-  local scheme = M.get_scheme()
+M.apply_colorscheme = function(scheme)
   log.debug("Using colorscheme: " .. scheme)
   vim.cmd("colorscheme " .. scheme)
 end

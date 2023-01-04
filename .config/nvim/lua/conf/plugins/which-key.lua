@@ -1,36 +1,29 @@
-local M = {}
-
-M.def = {
+return {
   {
     "folke/which-key.nvim",
-  },
-}
-
-M.config = function()
-  local wk = require("which-key")
-  wk.setup({
-    plugins = {
-      registers = false,
-      spelling = true, -- Spelling hints with z=
-      presets = {
-        operators = false,
-        motions = false,
-        text_objects = false,
-        windows = true,
-        nav = true,
-        z = true,
-        g = true,
+    event = "BufWinEnter",
+    config = {
+      plugins = {
+        registers = false,
+        spelling = true, -- Spelling hints with z=
+        presets = {
+          operators = false,
+          motions = false,
+          text_objects = false,
+          windows = true,
+          nav = true,
+          z = true,
+          g = true,
+        },
+      },
+      window = {
+        border = "rounded", -- none, single, double, shadow
+      },
+      key_labels = {
+        ["<space>"] = "SPC",
+        ["<cr>"] = "RET",
+        ["<tab>"] = "TAB",
       },
     },
-    window = {
-      border = "rounded", -- none, single, double, shadow
-    },
-    key_labels = {
-      ["<space>"] = "SPC",
-      ["<cr>"] = "RET",
-      ["<tab>"] = "TAB",
-    },
-  })
-end
-
-return M
+  },
+}

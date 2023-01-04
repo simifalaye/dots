@@ -36,34 +36,6 @@ api.nvim_create_user_command(
   }
 )
 
-api.nvim_create_user_command("Reload", function()
-  -- Remove keymaps
-  require("conf.utils.map").unmap_all()
-  -- Unload config namespace
-  for name, _ in pairs(package.loaded) do
-    if name:match("^conf") then
-      package.loaded[name] = nil
-    end
-  end
-  -- Reload config
-  dofile(vim.env.MYVIMRC)
-  -- Run packer
-  vim.cmd(":PackerInstall")
-  vim.cmd(":PackerCompile")
-  -- Start LSP
-  if vim.fn.exists(":LspStart") ~= 0 then
-    vim.defer_fn(function()
-      vim.cmd("LspStart")
-    end, 1000)
-  end
-  -- Manually run VimEnter autocmd to emulate a new run of Vim
-  vim.cmd("doautocmd VimEnter")
-  -- Notify
-  log.info("Reloaded config!")
-end, {
-  desc = "Reload config",
-})
-
 api.nvim_create_user_command(
   "ToggleList",
   --- Toggle list (quickfix/loclist)
@@ -92,29 +64,6 @@ api.nvim_create_user_command(
   end,
   {
     desc = "Toggle quickfix or loclist",
-    nargs = 1,
-  }
-)
-
-api.nvim_create_user_command(
-  "ToggleOption",
-  --- Toggle an nvim option
-  --- @param opt table (1 arg) => option string
-  function(opt)
-    local option = opt.args
-    local info = vim.api.nvim_get_option_info(option)
-    local scopes = { buf = "bo", win = "wo", global = "o" }
-    local scope = scopes[info.scope]
-    local options = vim[scope]
-    options[option] = not options[option]
-    if options[option] then
-      log.warn("enabled vim." .. scope .. "." .. option, "Toggle")
-    else
-      log.warn("disabled vim." .. scope .. "." .. option, "Toggle")
-    end
-  end,
-  {
-    desc = "Toggle an nvim option",
     nargs = 1,
   }
 )
@@ -162,6 +111,7 @@ api.nvim_create_user_command("BufDel", function(opt)
   -- Check if buffer still exists, to ensure the target buffer wasn't killed
   -- due to options like bufhidden=wipe.
   if vim.api.nvim_buf_is_valid(bufnr) then
+  ---@diagnostic disable-next-line: param-type-mismatch
     local _, err = pcall(vim.cmd, string.format("%s %d", killcmd, bufnr))
     if not err == nil and not err == "" then
       require("conf.utils.log").error(err)
@@ -173,6 +123,31 @@ end, {
   nargs = 1,
 })
 
+api.nvim_create_user_command("OpenLink", function()
+  local open = function(path)
+    fn.jobstart({ "xdg-open", path }, { detach = true })
+    vim.notify(string.format("Opening %s", path))
+  end
+
+  local file = fn.expand("<cfile>")
+  if not file or fn.isdirectory(file) > 0 then
+    return vim.cmd.edit(file)
+  end
+
+  if file:match("http[s]?://") then
+    return open(file)
+  end
+
+  -- consider anything that looks like string/string a github link
+  local plugin_url_regex = "[%a%d%-%.%_]*%/[%a%d%-%.%_]*"
+  local link = string.match(file, plugin_url_regex)
+  if link then
+    return open(string.format("https://www.github.com/%s", link))
+  end
+end, {
+  desc = "Open link under cursor",
+})
+
 api.nvim_create_user_command(
   "SetMinLogLevel",
   -- Set the minimum log level
@@ -182,22 +157,6 @@ api.nvim_create_user_command(
   end,
   {
     desc = "Set minimum log level: 1 (debug), 2 (info), 3 (warn), 4 (error)",
-    nargs = 1,
-  }
-)
-
-api.nvim_create_user_command(
-  "GotoConflict",
-  -- Set the minimum log level
-  -- @param opt table (1 arg) => next/prev string
-  function(opt)
-    local action = opt.args == "prev" and "'bW'" or "'W'"
-    vim.cmd(
-      [[call search('^\(@@ .* @@\|[<=>|]\{7}[<=>|]\@!\)', ]] .. action .. [[)]]
-    )
-  end,
-  {
-    desc = "Goto git conflict marker (next/prev)",
     nargs = 1,
   }
 )

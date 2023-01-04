@@ -6,7 +6,7 @@ test -f ${HELPERS_D}/common.sh && source ${HELPERS_D}/common.sh
 
 # Base pkgs
 APT_REPOS=(
-    "neovim-ppa/stable"
+    # "neovim-ppa/stable"
 )
 APT_PKGS=(
     atool
@@ -19,7 +19,6 @@ APT_PKGS=(
     fzf
     htop
     jq
-    neovim
     ripgrep
     rsync
     tig
@@ -113,6 +112,7 @@ if ! is_callable delta; then
             rm /tmp/delta
     fi
 fi
+
 if ! is_callable exa; then
     ver=$(get_latest_github "ogham/exa")
     if [ -n "${ver}" ]; then
@@ -127,6 +127,17 @@ if ! is_callable exa; then
             rm -rf /tmp/exa.zip
         }
     fi
+fi
+
+nvim_ver="0.8.2"
+if ! is_callable nvim || \
+    [[ "$nvim_ver" != "$(nvim --version | head -1 | grep -o '[0-9]\.[0-9]\.[0-9]')" ]]; then
+    dir=~/.local/bin/nvim-linux64
+    mkdir -p ~/.local/bin
+    rm -rf ${dir} && mkdir -p ${dir}
+    wget -qO- https://github.com/neovim/neovim/releases/download/v${nvim_ver}/nvim-linux64.tar.gz | \
+        tar xvz -C ${dir} --strip-components=1 && \
+        rm ~/.local/bin/nvim && ln -s ${dir}/bin/nvim ~/.local/bin/nvim
 fi
 
 trap bye EXIT

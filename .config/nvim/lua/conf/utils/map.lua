@@ -1,6 +1,5 @@
 local api = vim.api
 local log = require("conf.utils.log")
-local prequire = require("conf.utils.prequire")
 
 _G._store["keymaps"] = _G._store["keymaps"] or {}
 local map_store = _G._store["keymaps"]
@@ -85,7 +84,7 @@ M.group = function(prefix, name)
   if not prefix or not name then
     return
   end
-  local wk = prequire("which-key")
+  local wk = _G.prequire("which-key")
   if wk then
     wk.register({ [prefix] = { name = name } })
     log.debug(log.fmt("Key Group {%s, %s}", prefix, name))

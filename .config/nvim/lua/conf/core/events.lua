@@ -1,6 +1,5 @@
 local api = vim.api
 local cmd = vim.cmd
-local utils = require("conf.utils")
 
 -- Utilities
 local au_utils = api.nvim_create_augroup("Utilities", {})
@@ -64,21 +63,21 @@ api.nvim_create_autocmd({ "VimResized" }, {
   pattern = { "*" },
   command = "wincmd =",
 })
-
--- Numbers
-local au_num = api.nvim_create_augroup("Numbers", {})
-api.nvim_create_autocmd("BufEnter", {
-  group = au_num,
-  desc = "Disable/Enable numbers based on ft",
+api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
+  group = au_win,
+  desc = "Highlight window when focused",
   pattern = "*",
   callback = function()
-    local excluded = { alpha = true }
-    if excluded[vim.api.nvim_buf_get_option(0, "filetype")] then
-      vim.opt.number = false
-      vim.opt.relativenumber = false
-    else
-      vim.opt.number = true
-      vim.opt.relativenumber = true
-    end
+    vim.opt.relativenumber = true
+    vim.opt.cursorline = true
+  end,
+})
+api.nvim_create_autocmd({ "BufLeave", "WinLeave" }, {
+  group = au_win,
+  desc = "Un-highlight window when un-focused",
+  pattern = "*",
+  callback = function()
+    vim.opt.relativenumber = false
+    vim.opt.cursorline = false
   end,
 })

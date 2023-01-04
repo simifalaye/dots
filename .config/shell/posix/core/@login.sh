@@ -88,4 +88,6 @@ if grep -q "microsoft" /proc/version &>/dev/null; then # WSL 2
     export RUNLEVEL=3
     # Escape path
     export PATH=$(echo ${PATH} | sed 's! !\\ !g')
+    # Use explorer.exe for browser
+    export BROWSER="/mnt/c/Windows/explorer.exe"
 fi

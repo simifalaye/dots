@@ -1,51 +1,58 @@
 --[[
 
 Neovim inint file
-Nvim version: 0.7.0+
+Nvim version: 0.8.0+
 Maintainer: simifalaye
 
 --]]
-local log = require("conf.utils.log")
 
--- Globals
--- ==========
+-- Map leader
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
 
-_G._store = _G._store or {}
+-- Load globals
+require("conf.globals")
 
---- Inspect the contents of an object very quickly
---- ex. P({1,2,3})
---- @vararg any
---- @return any
-_G.P = function(...)
-  local objects, v = {}, nil
-  for i = 1, select("#", ...) do
-    v = select(i, ...)
-    table.insert(objects, vim.inspect(v))
-  end
-  print(table.concat(objects, "\n"))
-  return ...
+-- Install lazy plugin manager if not installed
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
 end
 
--- Init
--- =======
+-- Add to runtime path
+vim.opt.rtp:prepend(lazypath)
 
--- Setup loading optimizer
-local impatient_ok, impatient = pcall(require, "impatient")
-if impatient_ok then
-  impatient.enable_profile()
-end
+-- Load lazy and configure
+require("lazy").setup("conf.plugins", {
+  defaults = { lazy = true },
+  install = {
+    colorscheme = { "base16-" .. vim.env.BASE16_THEME },
+  },
+  performance = {
+    rtp = {
+      disabled_plugins = {
+        "gzip",
+        "matchit",
+        "matchparen",
+        "netrwPlugin",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
+  },
+})
 
--- Load modules in order
-for _, module in ipairs({
-  "conf.plugins",
-  "conf.core.options",
-  "conf.core.commands",
-  "conf.core.events",
-  "conf.core.keymaps",
-  "conf.core.theme",
-}) do
-  local status_ok, fault = pcall(require, module)
-  if not status_ok then
-    log.error("Failed to load: " .. module .. "\n\n" .. fault)
-  end
-end
+-- Load core modules
+require("conf.core.options")
+require("conf.core.commands")
+require("conf.core.events")
+require("conf.core.keymaps")

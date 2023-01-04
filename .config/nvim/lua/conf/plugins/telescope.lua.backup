@@ -1,7 +1,6 @@
-local utils = require("conf.utils")
-
 local M = {}
 
+M.disable = true
 M.def = {
   {
     "nvim-telescope/telescope.nvim",
@@ -106,6 +105,13 @@ M.config = function()
   m.nnoremap("<leader>fH", "<cmd>Telescope highlights<CR>", "Highlights")
   m.nnoremap("<leader>fk", "<cmd>Telescope keymaps<CR>", "Keymaps")
   m.nnoremap("<leader>fm", "<cmd>Telescope man_pages<CR>", "Man Pages")
+  m.nnoremap("<leader>fn", function()
+    require("telescope.builtin").find_files({
+      prompt_title = "Notes",
+      cwd = "~/Notes",
+      hidden = true,
+    })
+  end, "Notes")
   m.nnoremap("<leader>fo", "<cmd>Telescope vim_options<CR>", "Options")
   m.nnoremap("<leader>fq", "<cmd>Telescope quickfix<CR>", "Quickfix")
   m.nnoremap("<leader>fs", function()

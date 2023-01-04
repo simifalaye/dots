@@ -15,4 +15,3 @@ xsh module core
 xsh module bat interactive
 xsh module fzf interactive
 xsh module trash interactive:logout
-xsh module zk interactive
