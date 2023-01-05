@@ -112,6 +112,12 @@ if [ "$TERM" != "dumb" ]; then
     export LESS_TERMCAP_ue=$'\E[0m'        # ends underline
 fi
 
+# Gpg
+# ===
+
+GPG_TTY=$(tty)
+export GPG_TTY
+
 # Local config
 # ============
 # IMPORTANT: MUST BE AT THE END TO OVERRIDE
