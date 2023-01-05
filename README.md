@@ -18,16 +18,28 @@
 
 ```
 yadm clone --bootstrap git@github.com:simifalaye/dots.git
+yadm decrypt
 ```
 
-## Hide meta files
+## Tips
 
 To hide the README and LICENSE files from HOME:
-`yadm sparse-checkout reapply`
+```
+yadm sparse-checkout reapply
+```
 To unhide them for editing:
-`yadm sparse-checkout disable`
+```
+yadm sparse-checkout disable
+```
 To stage them:
-`yadm add README.md LICENSE --sparse`
+```
+yadm add README.md LICENSE --sparse
+```
+
+To re-add modified encrypted files:
+```
+yadm encrypt && yadm add ~/.local/share/yadm/archive
+```
 
 # Graphical Applications
 
