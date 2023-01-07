@@ -6,11 +6,6 @@ return {
     dependencies = "nvim-tree/nvim-web-devicons",
     config = function()
       local fzf = require("fzf-lua")
-      local fwrap = function(func, arg)
-        return function()
-          func(arg)
-        end
-      end
 
       -- Setup keymaps
       -- -------------
@@ -18,24 +13,26 @@ return {
       -- root
       m.nnoremap("<C-f>", fzf.live_grep, "Find text")
       m.nnoremap("<C-p>", fzf.files, "Find Files")
-      m.nnoremap("<leader>;", fzf.buffers, "Find Buffer")
-      m.nnoremap("<leader>:", fzf.command_history, "Find CmdHist")
-      m.nnoremap("<leader>,", fzf.oldfiles, "Find Recent")
       m.nnoremap("<leader>.", fzf.resume, "Find resume")
-      m.nnoremap("<leader>/", fzf.search_history, "Search Hist")
+      m.nnoremap("<leader>,", fzf.builtin, "Find Show")
+      m.nnoremap("<leader>;", fzf.buffers, "Find Buffer")
+      m.nnoremap("<leader>'", fzf.oldfiles, "Find Recents")
+      m.nnoremap("<leader>\"", function()
+        fzf.oldfiles({ cwd_only = true })
+      end, "Find Recents (cwd)")
+      m.nnoremap("<leader>:", fzf.command_history, "Find Command History")
+      m.nnoremap("<leader>/", fzf.search_history, "Find Search History")
 
       m.group("<leader>f", "+find")
       m.nnoremap("<leader>f'", fzf.marks, "Marks")
       m.nnoremap('<leader>f"', fzf.registers, "Registers")
       m.nnoremap("<leader>f*", fzf.blines, "(in) Buffer")
       m.nnoremap("<leader>fc", fzf.commands, "Commands")
-      m.nnoremap(
-        "<leader>ff",
-        fwrap(fzf.files, {
+      m.nnoremap("<leader>ff", function()
+        fzf.files({
           fd_opts = "--no-ignore --color=never --type f --hidden --follow --exclude .git",
-        }),
-        "Files (all)"
-      )
+        })
+      end, "Files (all)")
       m.nnoremap("<leader>fh", fzf.help_tags, "Help tags")
       m.nnoremap("<leader>fk", fzf.keymaps, "Keymaps")
       m.nnoremap("<leader>fm", fzf.man_pages, "Man Pages")
@@ -69,8 +66,12 @@ return {
       -- notes
       local n_opts = { prompt = "Notes> ", cwd = "~/Notes" }
       m.group("<leader>fn", "+notes")
-      m.nnoremap("<leader>fnf", fwrap(fzf.files, n_opts), "Files")
-      m.nnoremap("<leader>fng", fwrap(fzf.live_grep, n_opts), "Search")
+      m.nnoremap("<leader>fnf", function()
+        fzf.files(n_opts)
+      end, "Files")
+      m.nnoremap("<leader>fng", function()
+        fzf.live_grep(n_opts)
+      end, "Search")
       -- yadm
       local yadm_git_dir = "$HOME/.local/share/yadm/repo.git"
       local yadm_cmd =
@@ -88,24 +89,24 @@ return {
         rg_glob = false, -- this isn't `rg`
       }
       m.group("<leader>fy", "+yadm")
-      m.nnoremap(
-        "<leader>fyb",
-        fwrap(fzf.git_branches, yadm_git_opts),
-        "Branches"
-      )
-      m.nnoremap(
-        "<leader>fyc",
-        fwrap(fzf.git_commits, yadm_git_opts),
-        "Commits"
-      )
-      m.nnoremap(
-        "<leader>fyC",
-        fwrap(fzf.git_bcommits, yadm_git_opts),
-        "Commits (buf)"
-      )
-      m.nnoremap("<leader>fyf", fwrap(fzf.git_files, yadm_git_opts), "Files")
-      m.nnoremap("<leader>fyg", fwrap(fzf.live_grep, yadm_grep_opts), "Grep")
-      m.nnoremap("<leader>fys", fwrap(fzf.git_status, yadm_git_opts), "Status")
+      m.nnoremap("<leader>fyb", function()
+        fzf.git_branches(yadm_git_opts)
+      end, "Branches")
+      m.nnoremap("<leader>fyc", function()
+        fzf.git_commits(yadm_git_opts)
+      end, "Commits")
+      m.nnoremap("<leader>fyC", function()
+        fzf.git_bcommits(yadm_git_opts)
+      end, "Commits (buf)")
+      m.nnoremap("<leader>fyf", function()
+        fzf.git_files(yadm_git_opts)
+      end, "Files")
+      m.nnoremap("<leader>fyg", function()
+        fzf.live_grep(yadm_grep_opts)
+      end, "Grep")
+      m.nnoremap("<leader>fys", function()
+        fzf.git_status(yadm_git_opts)
+      end, "Status")
     end,
   },
 }

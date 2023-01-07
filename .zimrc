@@ -53,5 +53,5 @@ zmodule zsh-users/zsh-history-substring-search
 zmodule zsh-users/zsh-autosuggestions
 # Reminds you of your existing aliases
 zmodule MichaelAquilina/zsh-you-should-use --source you-should-use.plugin.zsh
-# Quickly toggle an app in the bg and fg
+# Toggles "sudo" before the current/previous command by pressing [ESC][ESC]
 zmodule hcgraf/zsh-sudo --source sudo.plugin.zsh
