@@ -1,5 +1,5 @@
 local api = vim.api
-local log = require("conf.utils.log")
+local log = require("utils.log")
 
 _G._store["keymaps"] = _G._store["keymaps"] or {}
 local map_store = _G._store["keymaps"]

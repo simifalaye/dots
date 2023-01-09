@@ -1,4 +1,4 @@
-local log = require("conf.utils.log")
+local log = require("utils.log")
 
 local M = {}
 

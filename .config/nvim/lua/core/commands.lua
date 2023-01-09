@@ -1,6 +1,6 @@
 local api = vim.api
 local fn = vim.fn
-local log = require("conf.utils.log")
+local log = require("utils.log")
 
 api.nvim_create_user_command(
   "Todo",
@@ -114,7 +114,7 @@ api.nvim_create_user_command("BufDel", function(opt)
   ---@diagnostic disable-next-line: param-type-mismatch
     local _, err = pcall(vim.cmd, string.format("%s %d", killcmd, bufnr))
     if err ~= nil and not err == "" then
-      require("conf.utils.log").error(err)
+      require("utils.log").error(err)
     end
   end
 end, {

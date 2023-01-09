@@ -2,6 +2,7 @@ return {
   {
     "aserowy/tmux.nvim",
     lazy = false,
+    cond = vim.env.TMUX ~= nil and vim.env.TMUX ~= "",
     config = {
       -- overwrite default configuration
       -- here, e.g. to enable default bindings

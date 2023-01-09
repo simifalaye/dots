@@ -7,7 +7,7 @@ return {
       require("substitute").setup()
 
       -- Setup keybinds
-      local m = require("conf.utils.map")
+      local m = require("utils.map")
       m.nnoremap(
         "R",
         "<cmd>lua require('substitute').operator()<cr>",

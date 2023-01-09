@@ -1,11 +1,11 @@
----@diagnostic disable: undefined-global
+local ls = require("luasnip")
 return {
-  snippet({
+  ls.snippet({
     trig = "mod",
     name = "Define module",
     dscr = "Template for a new module",
   }, {
-    t({
+    ls.t({
       "local M = {}",
       "",
       "M.init = function()",

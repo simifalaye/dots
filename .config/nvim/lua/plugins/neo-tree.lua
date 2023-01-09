@@ -10,9 +10,14 @@ return {
     cmd = { "Neotree" },
     init = function()
       -- Setup keybinds
-      local m = require("conf.utils.map")
+      local m = require("utils.map")
       m.nnoremap("-", "<cmd>Neotree toggle<CR>", "Explorer")
       m.nnoremap("_", "<cmd>Neotree reveal<CR>", "Open file in explorer")
+      -- Start neo-tree when a directory is given or no arguments
+      vim.cmd([[autocmd StdinReadPre * let s:std_in=1]])
+      vim.cmd([[autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists('s:std_in') |
+        \ execute 'Neotree position=current' argv()[0] | wincmd p | enew | execute 'cd '.argv()[0] | endif]])
+      vim.cmd([[autocmd VimEnter * if argc() == 0 && !exists('s:std_in') | execute 'Neotree position=current' | endif]])
     end,
     config = function()
       local tree = require("neo-tree")
@@ -28,6 +33,7 @@ return {
           mappings = {
             ["l"] = "open",
             ["h"] = "close_node",
+            ["<space>"] = "noop",
           },
         },
         filesystem = {
@@ -43,7 +49,6 @@ return {
             },
           },
           follow_current_file = false,
-          hijack_netrw_behavior = "open_current",
           use_libuv_file_watcher = true,
         },
       })

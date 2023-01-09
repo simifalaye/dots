@@ -4,7 +4,6 @@ return {
     lazy = false,
     build = ":TSUpdate",
     dependencies = {
-      "p00f/nvim-ts-rainbow",
       "nvim-treesitter/nvim-treesitter-textobjects",
       "nvim-treesitter/nvim-treesitter-context",
       "windwp/nvim-ts-autotag",

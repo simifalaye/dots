@@ -1,4 +1,4 @@
-local m = require("conf.utils.map")
+local m = require("utils.map")
 
 -- Multi mode
 -------------
@@ -17,7 +17,7 @@ m.noremap(
   { expr = true }
 )
 
--- Save and quit
+-- Save
 m.noremap({ "n", "i", "v" }, "<C-s>", "<Esc>:update<CR>", "Save buffer")
 
 -- Normal mode
@@ -31,6 +31,10 @@ m.nnoremap("n", "nzzzv")
 m.nnoremap("N", "Nzzzv")
 m.nnoremap("p", "p`[v`]=", "Paste & format")
 m.nnoremap("Q", "@q", "Run q macro")
+m.nnoremap("<C-h>", "<C-w>h", "Focus window left")
+m.nnoremap("<C-j>", "<C-w>j", "Focus window down")
+m.nnoremap("<C-k>", "<C-w>k", "Focus window up")
+m.nnoremap("<C-l>", "<C-w>l", "Focus window right")
 
 -- (g) namespace
 m.nmap("g-", "yyp^v$r-Vk", "Underline -")
@@ -74,9 +78,6 @@ m.nnoremap("<leader>pc", ":Lazy clean<CR>", "Clean")
 m.nnoremap("<leader>ph", ":Lazy health<CR>", "Health")
 m.nnoremap("<leader>pi", ":Lazy install<CR>", "Install")
 m.nnoremap("<leader>ps", ":Lazy sync<CR>", "Sync")
-m.group("<leader>q", "+quit")
-m.nnoremap("<leader>qq", ":confirm qa<CR>", "Quit")
-m.nnoremap("<leader>q!", ":qa!<CR>", "Quit (force)")
 m.nnoremap("<leader>x", ":BufDel 0<CR>", "Close buffer")
 m.nnoremap("<leader>X", ":BufDel 1<CR>", "Exit buffer (wipe)")
 

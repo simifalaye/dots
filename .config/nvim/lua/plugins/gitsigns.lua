@@ -15,7 +15,7 @@ return {
       })
 
       -- Setup keybinds
-      local m = require("conf.utils.map")
+      local m = require("utils.map")
       m.group("<leader>h", "+hunk")
       m.noremap({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "In hunk")
       m.nnoremap("]h", function()

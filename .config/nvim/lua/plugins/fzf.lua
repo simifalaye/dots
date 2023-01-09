@@ -9,7 +9,7 @@ return {
 
       -- Setup keymaps
       -- -------------
-      local m = require("conf.utils.map")
+      local m = require("utils.map")
       -- root
       m.nnoremap("<C-f>", fzf.live_grep, "Find text")
       m.nnoremap("<C-p>", fzf.files, "Find Files")

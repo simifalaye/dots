@@ -1,5 +1,5 @@
 local keymaps = function(client, bufnr)
-  local m = require("conf.utils.map")
+  local m = require("utils.map")
   local o = { buffer = bufnr }
   local ft = vim.api.nvim_buf_get_option(bufnr, "filetype")
 

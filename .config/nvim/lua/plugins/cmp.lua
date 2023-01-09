@@ -3,6 +3,11 @@ return {
     "hrsh7th/nvim-cmp",
     event = "InsertEnter",
     dependencies = {
+      {
+        "L3MON4D3/LuaSnip",
+        tag = "v1.0.0",
+        dependencies = { "rafamadriz/friendly-snippets" },
+      },
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-path",
       "hrsh7th/cmp-nvim-lua",
@@ -11,7 +16,7 @@ return {
     },
     config = function()
       local cmp = require("cmp")
-      local luasnip = _G.prequire("luasnip")
+      local luasnip = require("luasnip")
       local has_words_before = function()
         local line, col = unpack(vim.api.nvim_win_get_cursor(0))
         return col ~= 0
@@ -29,9 +34,7 @@ return {
       cmp.setup({
         snippet = {
           expand = function(args)
-            if luasnip then
-              luasnip.lsp_expand(args.body)
-            end
+            luasnip.lsp_expand(args.body)
           end,
         },
         window = {
@@ -50,7 +53,7 @@ return {
           ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.select_next_item()
-            elseif luasnip and luasnip.expand_or_jumpable() then
+            elseif luasnip.expand_or_jumpable() then
               luasnip.expand_or_jump()
             elseif has_words_before() then
               cmp.complete()
@@ -61,7 +64,7 @@ return {
           ["<S-Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.select_prev_item()
-            elseif luasnip and luasnip.jumpable(-1) then
+            elseif luasnip.jumpable(-1) then
               luasnip.jump(-1)
             else
               fallback()
@@ -76,6 +79,18 @@ return {
           { name = "path" },
         },
       })
+
+      -- Set keymaps
+      local m = require("utils.map")
+      m.noremap({ "s", "i" }, "<C-e>", function()
+        if luasnip.choice_active() then
+          luasnip.change_choice(1)
+        end
+      end, "Snippet choice select")
+
+      -- Load snippets
+      require("luasnip/loaders/from_lua").lazy_load()
+      require("luasnip/loaders/from_vscode").lazy_load() -- friendly-snippets
     end,
   },
 }

@@ -4,7 +4,7 @@ return {
     lazy = false, -- make sure we load this during startup if it is your main colorscheme
     priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
-      local log = require("conf.utils.log")
+      local log = require("utils.log")
       local base16 = require("base16-colorscheme")
 
       local colorscheme = vim.env.BASE16_THEME

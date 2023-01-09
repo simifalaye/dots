@@ -11,7 +11,13 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
 -- Load globals
-require("conf.globals")
+require("globals")
+
+-- Load core modules
+require("core.options")
+require("core.commands")
+require("core.events")
+require("core.keymaps")
 
 -- Install lazy plugin manager if not installed
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -30,7 +36,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 -- Load lazy and configure
-require("lazy").setup("conf.plugins", {
+require("lazy").setup("plugins", {
   defaults = { lazy = true },
   install = {
     colorscheme = { "base16-" .. vim.env.BASE16_THEME },
@@ -50,9 +56,3 @@ require("lazy").setup("conf.plugins", {
     },
   },
 })
-
--- Load core modules
-require("conf.core.options")
-require("conf.core.commands")
-require("conf.core.events")
-require("conf.core.keymaps")

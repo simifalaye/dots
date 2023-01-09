@@ -3,7 +3,7 @@ local opt = vim.opt
 local g = vim.g
 
 -- Misc
-opt.clipboard = "unnamedplus"
+opt.clipboard = ""
 opt.encoding = "utf-8"
 opt.matchpairs = { "(:)", "{:}", "[:]", "<:>" }
 opt.syntax = "enable"
