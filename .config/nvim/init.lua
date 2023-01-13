@@ -39,7 +39,14 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup("plugins", {
   defaults = { lazy = true },
   install = {
-    colorscheme = { "base16-" .. vim.env.BASE16_THEME },
+    colorscheme = {
+      (function()
+        if vim.env.BASE16_THEME ~= nil and vim.env.BASE16_THEME ~= "" then
+          return "base16-" .. vim.env.BASE16_THEME
+        end
+        return "habamax"
+      end)(),
+    },
   },
   performance = {
     rtp = {

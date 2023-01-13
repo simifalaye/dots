@@ -1,5 +1,3 @@
-local log = require("utils.log")
-
 local M = {}
 
 local function hl_by_name(name)
@@ -14,6 +12,10 @@ local function hl_prop(group, prop)
   return status_ok and color or nil
 end
 
+--- Get color strings (fg and bg) of a highlight group
+---@param hlgroup string name of group
+---@param base table?
+---@return table
 M.get_hl_group = function(hlgroup, base)
   return vim.tbl_deep_extend(
     "force",
@@ -22,19 +24,8 @@ M.get_hl_group = function(hlgroup, base)
   )
 end
 
-M.get_hl_fg = function(hlgroup, base)
-  return vim.tbl_deep_extend(
-    "force",
-    base or {},
-    { fg = hl_prop(hlgroup, "foreground") }
-  )
-end
-
-M.apply_colorscheme = function(scheme)
-  log.debug("Using colorscheme: " .. scheme)
-  vim.cmd("colorscheme " .. scheme)
-end
-
+--- Set the values of multiple highlights (fg and bg)
+---@param highlights table in format {name = {fg="#<code>", bg="#<code>", ...}
 M.set_highlights = function(highlights)
   for group, spec in pairs(highlights) do
     vim.api.nvim_set_hl(0, group, spec)

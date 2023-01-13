@@ -3,16 +3,16 @@ return {
     "hrsh7th/nvim-cmp",
     event = "InsertEnter",
     dependencies = {
-      {
-        "L3MON4D3/LuaSnip",
-        tag = "v1.0.0",
-        dependencies = { "rafamadriz/friendly-snippets" },
-      },
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-path",
       "hrsh7th/cmp-nvim-lua",
       "hrsh7th/cmp-nvim-lsp",
       "saadparwaiz1/cmp_luasnip",
+      {
+        "L3MON4D3/LuaSnip",
+        tag = "v1.0.0",
+        dependencies = { "rafamadriz/friendly-snippets" },
+      },
     },
     config = function()
       local cmp = require("cmp")

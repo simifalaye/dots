@@ -73,3 +73,12 @@ opt.updatetime = 250
 
 -- Filetype
 g.do_filetype_lua = 1 -- use filetype.lua when possible
+
+-- Grep
+if _G.executable('rg') then -- Use faster grep if available
+  vim.o.grepprg = [[rg --glob "!.git" --no-heading --vimgrep --follow $*]]
+  opt.grepformat = opt.grepformat ^ { '%f:%l:%c:%m' }
+elseif _G.executable('ag') then
+  vim.o.grepprg = [[ag --nogroup --nocolor --vimgrep]]
+  opt.grepformat = opt.grepformat ^ { '%f:%l:%c:%m' }
+end

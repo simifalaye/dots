@@ -2,6 +2,7 @@ return {
   {
     "ibhagwan/fzf-lua",
     lazy = false,
+    cond = _G.executable("fzf"),
     branch = "main",
     dependencies = "nvim-tree/nvim-web-devicons",
     config = function()
@@ -17,7 +18,7 @@ return {
       m.nnoremap("<leader>,", fzf.builtin, "Find Show")
       m.nnoremap("<leader>;", fzf.buffers, "Find Buffer")
       m.nnoremap("<leader>'", fzf.oldfiles, "Find Recents")
-      m.nnoremap("<leader>\"", function()
+      m.nnoremap('<leader>"', function()
         fzf.oldfiles({ cwd_only = true })
       end, "Find Recents (cwd)")
       m.nnoremap("<leader>:", fzf.command_history, "Find Command History")
@@ -31,12 +32,18 @@ return {
       m.nnoremap("<leader>ff", function()
         fzf.files({
           fd_opts = "--no-ignore --color=never --type f --hidden --follow --exclude .git",
+          rg_opts = "--no-ignore --color=never --files --hidden --follow -g '!.git'",
         })
       end, "Files (all)")
       m.nnoremap("<leader>fh", fzf.help_tags, "Help tags")
       m.nnoremap("<leader>fk", fzf.keymaps, "Keymaps")
       m.nnoremap("<leader>fm", fzf.man_pages, "Man Pages")
       m.nnoremap("<leader>fq", fzf.quickfix, "Quickfix")
+      m.nnoremap("<leader>fs", function()
+        fzf.files({
+          rg_opts = "--no-ignore --column --line-number --no-heading --color=always --smart-case --max-columns=512",
+        })
+      end, "Search (all)")
       -- git
       m.group("<leader>fg", "+git")
       m.nnoremap("<leader>fgb", fzf.git_branches, "Branches")

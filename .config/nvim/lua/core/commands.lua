@@ -19,7 +19,7 @@ api.nvim_create_user_command(
     bang = true,
     range = true,
     complete = "file",
-    nargs = 1,
+    nargs = 1, -- Selection
   }
 )
 
@@ -32,53 +32,43 @@ api.nvim_create_user_command(
     bang = true,
     range = true,
     complete = "file",
-    nargs = 1,
+    nargs = 1, -- Selection
   }
 )
 
-api.nvim_create_user_command(
-  "ToggleList",
-  --- Toggle list (quickfix/loclist)
-  --- @param opt table (1 arg) => prefix string: c or l
-  function(opt)
-    local prefix = opt.args
-    for _, win in ipairs(vim.api.nvim_list_wins()) do
-      local buf = vim.api.nvim_win_get_buf(win)
-      local location_list = fn.getloclist(0, { filewinid = 0 })
-      local is_loc_list = location_list.filewinid > 0
-      if vim.bo[buf].filetype == "qf" or is_loc_list then
-        fn.execute(prefix .. "close")
-        return
-      end
-    end
-    if prefix == "l" and vim.tbl_isempty(fn.getloclist(0)) then
-      log.warn("Location List is Empty.")
+api.nvim_create_user_command("ToggleList", function(opt)
+  local prefix = opt.args
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local location_list = fn.getloclist(0, { filewinid = 0 })
+    local is_loc_list = location_list.filewinid > 0
+    if vim.bo[buf].filetype == "qf" or is_loc_list then
+      fn.execute(prefix .. "close")
       return
     end
-
-    local winnr = fn.winnr()
-    fn.execute(prefix .. "open")
-    if fn.winnr() ~= winnr then
-      vim.cmd([[wincmd p]])
-    end
-  end,
-  {
-    desc = "Toggle quickfix or loclist",
-    nargs = 1,
-  }
-)
-
-api.nvim_create_user_command("BufDel", function(opt)
-  -- Process args
-  local args = opt.args
-  local wipe = false
-  if args and args == "1" then
-    wipe = true
+  end
+  if prefix == "l" and vim.tbl_isempty(fn.getloclist(0)) then
+    log.warn("Location List is Empty.")
+    return
   end
 
+  local winnr = fn.winnr()
+  fn.execute(prefix .. "open")
+  if fn.winnr() ~= winnr then
+    vim.cmd([[wincmd p]])
+  end
+end, {
+  desc = "Toggle quickfix or loclist",
+  nargs = 1, -- {prefix(c=quickfix, l=loclist}
+})
+
+--- Delete(Wipe) a buffer and maintain window layout
+---@param bufnr number
+---@param bang boolean force?
+---@param wipe boolean wipe?
+local bufdel = function(bufnr, bang, wipe)
   local killcmd = wipe and "bw" or "bd"
-  local bufnr = 0
-  if opt.bang then
+  if bang then
     killcmd = killcmd .. "!"
   else
     killcmd = "confirm " .. killcmd
@@ -111,21 +101,39 @@ api.nvim_create_user_command("BufDel", function(opt)
   -- Check if buffer still exists, to ensure the target buffer wasn't killed
   -- due to options like bufhidden=wipe.
   if vim.api.nvim_buf_is_valid(bufnr) then
-  ---@diagnostic disable-next-line: param-type-mismatch
+    ---@diagnostic disable-next-line: param-type-mismatch
     local _, err = pcall(vim.cmd, string.format("%s %d", killcmd, bufnr))
     if err ~= nil and not err == "" then
       require("utils.log").error(err)
     end
   end
+end
+
+api.nvim_create_user_command("BufDel", function(opt)
+  local bufnr = opt.args ~= nil and opt.args or 0
+  bufdel(bufnr, opt.bang, false)
 end, {
   desc = "Delete a buffer without affecting window layout",
   bang = true,
-  nargs = 1,
+  nargs = 1, -- {buffer_number}
+})
+
+api.nvim_create_user_command("BufWipe", function(opt)
+  local bufnr = opt.args ~= nil and opt.args or 0
+  bufdel(bufnr, opt.bang, true)
+end, {
+  desc = "Wipe a buffer without affecting window layout",
+  bang = true,
+  nargs = 1, -- {buffer_number}
 })
 
 api.nvim_create_user_command("OpenLink", function()
   local open = function(path)
-    fn.jobstart({ "xdg-open", path }, { detach = true })
+    local open_cmd = "xdg-open"
+    if _G.is_wsl then
+      open_cmd = "/mnt/c/Windows/explorer.exe"
+    end
+    fn.jobstart({ open_cmd, path }, { detach = true })
     vim.notify(string.format("Opening %s", path))
   end
 
@@ -148,18 +156,12 @@ end, {
   desc = "Open link under cursor",
 })
 
-api.nvim_create_user_command(
-  "SetMinLogLevel",
-  -- Set the minimum log level
-  -- @param opt table (1 arg) => lvl integer
-  function(opt)
-    local lvl = tonumber(opt.args)
-    if type(lvl) == "number" then
-      return log.set_min_log_level(lvl)
-    end
-  end,
-  {
-    desc = "Set minimum log level: 1 (debug), 2 (info), 3 (warn), 4 (error)",
-    nargs = 1,
-  }
-)
+api.nvim_create_user_command("SetMinLogLevel", function(opt)
+  local lvl = tonumber(opt.args)
+  if type(lvl) == "number" then
+    return log.set_min_log_level(lvl)
+  end
+end, {
+  desc = "Set minimum log level: 1 (debug), 2 (info), 3 (warn), 4 (error)",
+  nargs = 1, -- {log_level(1=debug, 2=info, 3=warn, 4=error}
+})

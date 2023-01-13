@@ -7,7 +7,11 @@ return {
       local log = require("utils.log")
       local base16 = require("base16-colorscheme")
 
-      local colorscheme = vim.env.BASE16_THEME
+      local colorscheme = "default-dark"
+      if vim.env.BASE16_THEME ~= nil and vim.env.BASE16_THEME ~= "" then
+        colorscheme = vim.env.BASE16_THEME
+      end
+
       local bcolors = base16.colorschemes[colorscheme]
       if not colorscheme or colorscheme == "" or not bcolors then
         log.debug("Using default colorscheme instead of: " .. colorscheme)

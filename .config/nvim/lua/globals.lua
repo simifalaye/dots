@@ -3,6 +3,18 @@ _G._store = _G._store or {}
 -- Path separator based on os
 _G.path_sep = vim.loop.os_uname().version:match("Windows") and "\\" or "/"
 
+-- WSL deployment
+_G.is_wsl = (function()
+  local uname = vim.fn.substitute(vim.fn.system('uname'),'\n','','')
+  if uname == "Linux" then
+    local s = string.match(vim.fn.readfile("/proc/version")[1], "microsoft")
+    if string.match(s, "microsoft") then
+      return true
+    end
+    return false
+  end
+end)()
+
 --- Inspect the contents of an object very quickly
 --- ex. P({1,2,3})
 --- @vararg any

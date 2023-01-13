@@ -50,7 +50,7 @@ m.nnoremap(
   "Select last changed text",
   { expr = true }
 )
-m.nnoremap("gx", ":OpenLink<CR>", "Open link in browser")
+m.nnoremap("gl", ":OpenLink<CR>", "Open link in browser")
 
 -- Search and Replace
 -- 'c.' for word, 'c>' for WORD
@@ -164,13 +164,13 @@ m.cnoremap("<C-y>", [[pumvisible() ? "\<C-Y>" : "\<C-R>-"]], { expr = true })
 -- File/dir name accessors
 m.cnoremap(
   "<M-,>",
-  "<C-r>=fnameescape(expand('%'))<cr>",
-  "Insert file path",
+  "<C-r>=fnameescape(expand('%:p:h'))<cr>/",
+  "Insert dir path",
   { silent = false }
 )
 m.cnoremap(
   "<M-.>",
-  "<C-r>=fnameescape(expand('%:p:h'))<cr>/",
-  "Insert dir path",
+  "<C-r>=fnameescape(expand('%'))<cr>",
+  "Insert file path",
   { silent = false }
 )
