@@ -6,20 +6,20 @@ Maintainer: simifalaye
 
 --]]
 
--- Map leader
-vim.g.mapleader = " "
-vim.g.maplocalleader = "\\"
-
 -- Load globals
 require("globals")
+
+-- Map leader (MUST come before lazy plugin manager)
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
 
 -- Load core modules
 require("core.options")
 require("core.commands")
-require("core.events")
+require("core.autocommands")
 require("core.keymaps")
 
--- Install lazy plugin manager if not installed
+-- Install lazy plugin manager if not installed and add to rtp
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
@@ -31,8 +31,6 @@ if not vim.loop.fs_stat(lazypath) then
     lazypath,
   })
 end
-
--- Add to runtime path
 vim.opt.rtp:prepend(lazypath)
 
 -- Load lazy and configure

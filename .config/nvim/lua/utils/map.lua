@@ -54,8 +54,8 @@ local function multimap(target)
   end
 end
 
-local map_opts = { noremap = false, silent = true }
-local noremap_opts = { noremap = true, silent = true }
+local map_opts = { remap = true, silent = true }
+local noremap_opts = { silent = true }
 
 -- Mapping helper functions
 M.map = multimap("map")

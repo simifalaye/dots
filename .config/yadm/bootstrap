@@ -9,7 +9,7 @@ if [[ ! -d "$BOOTSTRAP_D" ]]; then
 fi
 
 HELPERS_D=${BOOTSTRAP_D}/helpers
-test -f ${HELPERS_D}/common.sh && source ${HELPERS_D}/common.sh
+test -f "${HELPERS_D}"/common.sh && source "${HELPERS_D}"/common.sh
 
 # Main
 # ====
@@ -26,7 +26,7 @@ if [ -z "${conf_ephemeral}" ]; then
     fi
     user_conf_write ephemeral ${conf_ephemeral}
 fi
-if [ -z ${conf_headless} ]; then
+if [ -z "${conf_headless}" ]; then
     if prompt_yes "Is this machine headless? "; then
         conf_headless=y
     else

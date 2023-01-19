@@ -73,13 +73,13 @@ m.nnoremap("<F4>", ":ToggleList c<CR>", "Toggle Quickfix")
 m.nnoremap("<leader><leader>", "<C-^>", "Last buffer")
 m.nnoremap("<leader>!", ":! chmod +x %<CR>", "Make file executable")
 m.group("<leader>p", "+plugin")
-m.nnoremap("<leader>pp", ":Lazy<CR>", "Ui")
+m.nnoremap("<leader>pp", ":Lazy<CR>", "Open")
 m.nnoremap("<leader>pc", ":Lazy clean<CR>", "Clean")
 m.nnoremap("<leader>ph", ":Lazy health<CR>", "Health")
 m.nnoremap("<leader>pi", ":Lazy install<CR>", "Install")
 m.nnoremap("<leader>ps", ":Lazy sync<CR>", "Sync")
-m.nnoremap("<leader>x", ":BufDel 0<CR>", "Close buffer")
-m.nnoremap("<leader>X", ":BufDel 1<CR>", "Exit buffer (wipe)")
+m.nnoremap("<leader>x", ":BufDel<CR>", "Exit buffer")
+m.nnoremap("<leader>X", ":BufWipe<CR>", "Wipe buffer")
 
 -- Visual/select/operator mode
 ------------------------------
@@ -91,7 +91,6 @@ m.vnoremap("<", "<gv")
 m.vnoremap(">", ">gv")
 m.vnoremap("*", [[y/<C-R>"<CR>]]) -- visual search
 m.vnoremap("#", [[y?<C-R>"<CR>]]) -- visual search
-m.vnoremap("y", "ygv<Esc>") -- keep cursor
 m.vnoremap("Q", ":norm @q<CR>", "Run Q silent", { silent = false })
 m.xnoremap("p", "pgvy") -- paste no copy
 vim.cmd([[

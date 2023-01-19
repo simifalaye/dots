@@ -5,7 +5,7 @@ _G.path_sep = vim.loop.os_uname().version:match("Windows") and "\\" or "/"
 
 -- WSL deployment
 _G.is_wsl = (function()
-  local uname = vim.fn.substitute(vim.fn.system('uname'),'\n','','')
+  local uname = vim.fn.substitute(vim.fn.system("uname"), "\n", "", "")
   if uname == "Linux" then
     local s = string.match(vim.fn.readfile("/proc/version")[1], "microsoft")
     if string.match(s, "microsoft") then
@@ -65,4 +65,19 @@ end
 _G.join_paths = function(...)
   local result = table.concat({ ... }, _G.path_sep)
   return result
+end
+
+--- Convert a list or map into a value by transforming each field using a cb
+---@generic T : table
+---@param callback function(T, T, key: string | number): T
+---@param list T[]
+---@param accum T?
+---@return T
+_G.fold = function(callback, list, accum)
+  accum = accum or {}
+  for k, v in pairs(list) do
+    accum = callback(accum, v, k)
+    assert(accum ~= nil, "The accumulator must be returned on each iteration")
+  end
+  return accum
 end

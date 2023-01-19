@@ -110,21 +110,21 @@ local bufdel = function(bufnr, bang, wipe)
 end
 
 api.nvim_create_user_command("BufDel", function(opt)
-  local bufnr = opt.args ~= nil and opt.args or 0
-  bufdel(bufnr, opt.bang, false)
+  local ok, bufnr = pcall(tonumber, opt.args)
+  bufdel(ok and bufnr or 0, opt.bang, false)
 end, {
   desc = "Delete a buffer without affecting window layout",
   bang = true,
-  nargs = 1, -- {buffer_number}
+  nargs = "?", -- {buffer_number?}
 })
 
 api.nvim_create_user_command("BufWipe", function(opt)
-  local bufnr = opt.args ~= nil and opt.args or 0
-  bufdel(bufnr, opt.bang, true)
+  local ok, bufnr = pcall(tonumber, opt.args)
+  bufdel(ok and bufnr or 0, opt.bang, true)
 end, {
   desc = "Wipe a buffer without affecting window layout",
   bang = true,
-  nargs = 1, -- {buffer_number}
+  nargs = "?", -- {buffer_number?}
 })
 
 api.nvim_create_user_command("OpenLink", function()
