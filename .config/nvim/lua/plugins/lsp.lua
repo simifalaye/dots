@@ -14,13 +14,7 @@ local keymaps = function(client, bufnr)
   m.nnoremap("K", vim.lsp.buf.hover, "Hover (LSP)", o)
 
   m.group("<leader>l", "+lsp")
-  m.nnoremap("<leader>la", vim.lsp.buf.code_action, "Code action", o)
-  m.vnoremap(
-    "<leader>la",
-    ":<C-U>lua vim.lsp.buf.range_code_action()<CR>",
-    "Code action",
-    o
-  )
+  m.noremap({"n", "x"}, "<leader>la", vim.lsp.buf.code_action, "Code action", o)
   m.nnoremap("<leader>ld", vim.diagnostic.open_float, "Diagnostics", o)
   if client.server_capabilities.documentFormattingProvider then
     m.nnoremap("<leader>lf", vim.lsp.buf.format, "Format", o)

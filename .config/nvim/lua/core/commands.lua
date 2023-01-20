@@ -104,7 +104,7 @@ local bufdel = function(bufnr, bang, wipe)
     ---@diagnostic disable-next-line: param-type-mismatch
     local _, err = pcall(vim.cmd, string.format("%s %d", killcmd, bufnr))
     if err ~= nil and not err == "" then
-      require("utils.log").error(err)
+      log.error(err)
     end
   end
 end
@@ -157,11 +157,9 @@ end, {
 })
 
 api.nvim_create_user_command("SetMinLogLevel", function(opt)
-  local lvl = tonumber(opt.args)
-  if type(lvl) == "number" then
-    return log.set_min_log_level(lvl)
-  end
+  vim.env.NVIM_MIN_LOG_LEVEL = opt.args
+  log.new({}, true)
 end, {
-  desc = "Set minimum log level: 1 (debug), 2 (info), 3 (warn), 4 (error)",
-  nargs = 1, -- {log_level(1=debug, 2=info, 3=warn, 4=error}
+  desc = "Set minimum log level: trace, debug, info, warn, error, fatal",
+  nargs = 1, -- {level}
 })

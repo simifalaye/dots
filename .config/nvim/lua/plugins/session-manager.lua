@@ -18,33 +18,27 @@ return {
         "Load current dir"
       )
       m.nnoremap(
-        "<leader>sL",
-        "<cmd>SessionManager load_last_session<CR>",
-        "Load last"
-      )
-      m.nnoremap(
-        "<leader>sp",
-        "<cmd>SessionManager load_session<CR>",
-        "Pick (load)"
-      )
-      m.nnoremap(
         "<leader>ss",
+        "<cmd>SessionManager load_session<CR>",
+        "Select"
+      )
+      m.nnoremap(
+        "<leader>sw",
         "<cmd>SessionManager save_current_session<CR>",
-        "Save"
+        "Write"
       )
     end,
     config = function()
       require("session_manager").setup({
         -- Disable auto{save, load}, force manual
         autoload_mode = require("session_manager.config").AutoloadMode.Disabled,
-        autosave_last_session = false,
-        -- autosave_ignore_filetypes = {
-        --   "gitcommit",
-        --   "fern",
-        --   "NvimTree",
-        --   "netrw",
-        --   "neo-tree",
-        -- },
+        autosave_ignore_filetypes = {
+          "gitcommit",
+          "fern",
+          "NvimTree",
+          "netrw",
+          "neo-tree",
+        },
       })
     end,
   },

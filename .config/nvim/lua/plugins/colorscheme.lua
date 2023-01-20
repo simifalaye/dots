@@ -14,7 +14,7 @@ return {
 
       local bcolors = base16.colorschemes[colorscheme]
       if not colorscheme or colorscheme == "" or not bcolors then
-        log.debug("Using default colorscheme instead of: " .. colorscheme)
+        log.debug("Using default colorscheme instead of: %s", colorscheme)
         colorscheme = "default-dark"
         bcolors = base16.colorscheme[colorscheme]
       end

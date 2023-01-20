@@ -1,157 +1,174 @@
----@diagnostic disable: return-type-mismatch
--- Logging utility for config
+-- -- Logging utility for config
 -- NOTE: You can start nvim with a specific log level by passing it as an
--- environment variable to the command (ex. 'NVIM_MIN_LOG_LEVEL=1 nvim')
+-- environment variable to the command (ex. 'NVIM_MIN_LOG_LEVEL=warn nvim')
 -- Modified from https://github.com/svermeulen/vimpeccable
+--
+-- Inspired by rxi/log.lua
+-- Modified by tjdevries and can be found at github.com/tjdevries/vlog.nvim
+--
+-- This library is free software; you can redistribute it and/or modify it
+-- under the terms of the MIT license. See LICENSE for details.
 
---- The diagnostic log levels
-local LogLevels = {
-  debug = 1,
-  info = 2,
-  warn = 3,
-  error = 4,
-  all = {
-    1,
-    2,
-    3,
-    4,
+-- User configuration section
+local default_config = {
+  -- Name of the plugin. Prepended to log messages
+  plugin = "conf",
+
+  -- Should print the output to neovim while running
+  use_console = true,
+
+  -- Should highlighting be used in console (using echohl)
+  highlights = true,
+
+  -- Should write to a file
+  use_file = false,
+
+  -- Any messages above this level will be logged.
+  level = "info",
+
+  -- Level configuration
+  modes = {
+    { name = "trace", hl = "DiagnosticHint" },
+    { name = "debug", hl = "DiagnosticHint" },
+    { name = "info", hl = "DiagnosticInfo" },
+    { name = "warn", hl = "DiagnosticWarn" },
+    { name = "error", hl = "DiagnosticError" },
+    { name = "fatal", hl = "DiagnosticError" },
   },
-  strings = {
-    "debug",
-    "info",
-    "warn",
-    "error",
-  },
-  highlights = {
-    "DiagnosticHint",
-    "DiagnosticInfo",
-    "DiagnosticWarn",
-    "DiagnosticError",
-  },
+
+  -- Can limit the number of decimals displayed for floats
+  float_precision = 0.01,
 }
 
---- Log printer type
-local PrintLogStream
-do
-  local _class_0
-  local _base_0 = {
-    log = function(self, message, level)
-      if level >= self.min_log_level then
-        local name = string.format("[%s]: ", tostring(LogLevels.strings[level]))
-        local hl = LogLevels.highlights[level]
-        vim.api.nvim_echo({ { name, hl }, { message } }, true, {})
-      end
-    end,
-  }
-  _base_0.__index = _base_0
-  _class_0 = setmetatable({
-    __init = function(self)
-      local lvl = tonumber(vim.env.NVIM_MIN_LOG_LEVEL)
-      self.min_log_level = LogLevels.all[lvl] or LogLevels.info
-      vim.env.NVIM_MIN_LOG_LEVEL = self.min_log_level
-    end,
-    __base = _base_0,
-    __name = "PrintLogStream",
-  }, {
-    __index = _base_0,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end,
-  })
-  _base_0.__class = _class_0
-  PrintLogStream = _class_0
-end
-local print_log_stream = PrintLogStream()
+local log = {}
 
---- Logger module
-local log
-do
-  local _class_0
-  local _base_0 = {
-    fmt = string.format,
-    levels = LogLevels,
-    streams = {
-      print_log_stream,
-    },
-    print_log_stream = print_log_stream,
-    --- Log a message to user
-    ---@param message string
-    ---@param level integer
-    log = function(message, level)
-      if message == nil then
-        message = "nil"
-      elseif type(message) ~= "string" then
-        message = tostring(message)
+local unpack = unpack or table.unpack
+
+log.new = function(config, standalone)
+  config = vim.tbl_deep_extend("force", default_config, config)
+
+  local outfile = string.format(
+    "%s/%s.log",
+    vim.api.nvim_call_function("stdpath", { "data" }),
+    config.plugin
+  )
+
+  local obj
+  if standalone then
+    obj = log
+  else
+    obj = {}
+  end
+
+  local levels = {}
+  for i, v in ipairs(config.modes) do
+    levels[v.name] = i
+  end
+  if vim.env.NVIM_MIN_LOG_LEVEL and levels[vim.env.NVIM_MIN_LOG_LEVEL] then
+    config.level = vim.env.NVIM_MIN_LOG_LEVEL
+  end
+
+  local round = function(x, increment)
+    increment = increment or 1
+    x = x / increment
+    return (x > 0 and math.floor(x + 0.5) or math.ceil(x - 0.5)) * increment
+  end
+
+  local make_string = function(...)
+    local t = {}
+    for i = 1, select("#", ...) do
+      local x = select(i, ...)
+
+      if type(x) == "number" and config.float_precision then
+        x = tostring(round(x, config.float_precision))
+      elseif type(x) == "table" then
+        x = vim.inspect(x)
+      else
+        x = tostring(x)
       end
-      local _list_0 = log.streams
-      for _index_0 = 1, #_list_0 do
-        local stream = _list_0[_index_0]
-        stream:log(message, level)
+
+      t[#t + 1] = x
+    end
+    return table.concat(t, " ")
+  end
+
+  local log_at_level = function(level, level_config, message_maker, ...)
+    -- Return early if we're below the config.level
+    if level < levels[config.level] then
+      return
+    end
+    local nameupper = level_config.name:upper()
+
+    local msg = message_maker(...)
+    local info = debug.getinfo(2, "Sl")
+    local lineinfo = info.short_src .. ":" .. info.currentline
+
+    -- Output to console
+    if config.use_console then
+      local console_string = string.format(
+        "[%-6s%s] %s: %s",
+        nameupper,
+        os.date("%H:%M:%S"),
+        lineinfo,
+        msg
+      )
+
+      if config.highlights and level_config.hl then
+        vim.cmd(string.format("echohl %s", level_config.hl))
       end
-    end,
-    --- Log a debug message to user
-    ---@param message string
-    ---@return any
-    debug = function(message)
-      return log.log(message, LogLevels.debug)
-    end,
-    --- Log an info message to user
-    ---@param message string
-    ---@return any
-    info = function(message)
-      return log.log(message, LogLevels.info)
-    end,
-    --- Log a warn message to user
-    ---@param message string
-    ---@return any
-    warn = function(message)
-      return log.log(message, LogLevels.warn)
-    end,
-    --- Log an error message to user
-    ---@param message string
-    ---@return any
-    error = function(message)
-      return log.log(message, LogLevels.error)
-    end,
-    --- Convert a log level string to the integer value
-    ---@param log_level_str string
-    ---@return integer
-    string_to_log_level = function(log_level_str)
-      for i = 1, #LogLevels.strings do
-        if log_level_str == LogLevels.strings[i] then
-          return i
+
+      local split_console = vim.split(console_string, "\n", {})
+      for _, v in ipairs(split_console) do
+        vim.cmd(
+          string.format(
+            [[echom "[%s] %s"]],
+            config.plugin,
+            vim.fn.escape(v, '"')
+          )
+        )
+      end
+
+      if config.highlights and level_config.hl then
+        vim.cmd("echohl NONE")
+      end
+    end
+
+    -- Output to log file
+    if config.use_file then
+      local fp = io.open(outfile, "a")
+      if fp then
+        local str = string.format(
+          "[%-6s%s] %s: %s\n",
+          nameupper,
+          os.date(),
+          lineinfo,
+          msg
+        )
+        fp:write(str)
+        fp:close()
+      end
+    end
+  end
+
+  for i, x in ipairs(config.modes) do
+    obj[x.name] = function(...)
+      return log_at_level(i, x, make_string, ...)
+    end
+
+    obj[("fmt_%s"):format(x.name)] = function()
+      return log_at_level(i, x, function(...)
+        local passed = { ... }
+        local fmt = table.remove(passed, 1)
+        local inspected = {}
+        for _, v in ipairs(passed) do
+          table.insert(inspected, vim.inspect(v))
         end
-      end
-      return error("Invalid log level '" .. tostring(log_level_str) .. "'")
-    end,
-    --- Set the minimum log level
-    ---@param log_level number
-    ---@return boolean true if successful
-    set_min_log_level = function(log_level)
-      if LogLevels.all[log_level] then
-        vim.env.NVIM_MIN_LOG_LEVEL = log_level
-        print_log_stream.min_log_level = log_level
-        return true
-      end
-      return error("Bad log level provided: " .. tostring(log_level))
-    end,
-  }
-  _base_0.__index = _base_0
-  _class_0 = setmetatable({
-    __init = function() end,
-    __base = _base_0,
-    __name = "log",
-  }, {
-    __index = _base_0,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end,
-  })
-  _base_0.__class = _class_0
-  log = _class_0
-  return _class_0
+        return string.format(fmt, unpack(inspected))
+      end)
+    end
+  end
 end
+
+log.new(default_config, true)
+
+return log

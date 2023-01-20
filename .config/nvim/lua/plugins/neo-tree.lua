@@ -52,6 +52,11 @@ return {
           use_libuv_file_watcher = true,
         },
       })
+
+      local nlog = _G.prequire("neo-tree.log")
+      if nlog then
+        nlog.new({level = "warn"}, true)
+      end
     end,
   },
 }

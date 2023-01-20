@@ -17,10 +17,10 @@ return {
       m.nnoremap("<leader>.", fzf.resume, "Find resume")
       m.nnoremap("<leader>,", fzf.builtin, "Find Show")
       m.nnoremap("<leader>;", fzf.buffers, "Find Buffer")
-      m.nnoremap("<leader>'", fzf.oldfiles, "Find Recents")
-      m.nnoremap('<leader>"', function()
+      m.nnoremap("<leader>'", function()
         fzf.oldfiles({ cwd_only = true })
       end, "Find Recents (cwd)")
+      m.nnoremap('<leader>"', fzf.oldfiles, "Find Recents")
       m.nnoremap("<leader>:", fzf.command_history, "Find Command History")
       m.nnoremap("<leader>/", fzf.search_history, "Find Search History")
 
@@ -40,7 +40,7 @@ return {
       m.nnoremap("<leader>fm", fzf.man_pages, "Man Pages")
       m.nnoremap("<leader>fq", fzf.quickfix, "Quickfix")
       m.nnoremap("<leader>fs", function()
-        fzf.files({
+        fzf.live_grep({
           rg_opts = "--no-ignore --column --line-number --no-heading --color=always --smart-case --max-columns=512",
         })
       end, "Search (all)")

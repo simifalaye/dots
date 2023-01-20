@@ -29,7 +29,7 @@ local function make_mapper(mode, o)
     if opts.buffer == nil then
       table.insert(map_store, { mode = mode, lhs = lhs })
     end
-    log.debug(log.fmt("Keymap {%s, %s, %s}", mode, lhs, rhs))
+    log.debug("Keymap {%s, %s, %s}", mode, lhs, rhs)
   end
 end
 
@@ -87,7 +87,7 @@ M.group = function(prefix, name)
   local wk = _G.prequire("which-key")
   if wk then
     wk.register({ [prefix] = { name = name } })
-    log.debug(log.fmt("Key Group {%s, %s}", prefix, name))
+    log.debug("Key Group {%s, %s}", prefix, name)
   end
 end
 
@@ -97,7 +97,7 @@ M.unmap_all = function()
   for _, v in pairs(map_store) do
     if v.mode and v.lhs then
       local _, _ = pcall(api.nvim_del_keymap, v.mode, v.lhs)
-      log.debug(log.fmt("Unmap {%s, %s}", v.mode, v.lhs))
+      log.debug("Unmap {%s, %s}", v.mode, v.lhs)
     end
   end
   log.debug("All global user keys have been unbound")

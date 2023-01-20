@@ -22,14 +22,15 @@ local function validate_autocmd(name, cmd)
     return
   end
   vim.schedule(function()
-    log.error(
-      string.format("Autocmd: %s", name)
-        .. ": Incorrect keys: "
-        .. table.concat(incorrect, ", ")
+    log.error("Autocmd: %s: Incorrect keys: %s", name, table.concat(incorrect, ", ")
     )
   end)
 end
 
+--- Create an augroup with a list of autocommands
+---@param name string
+---@param commands table
+---@return integer
 M.augroup = function(name, commands)
   assert(name ~= "User", "The name of an augroup CANNOT be User")
   assert(
