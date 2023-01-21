@@ -46,6 +46,9 @@ require("lazy").setup("plugins", {
       end)(),
     },
   },
+  change_detection = {
+    notify = false,
+  },
   performance = {
     rtp = {
       disabled_plugins = {

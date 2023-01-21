@@ -65,7 +65,7 @@ command.augroup("WindowBehaviours", {
   },
   {
     desc = "Highlight window when focused",
-    event = { "BufEnter", "WinEnter" },
+    event = { "BufEnter", "WinEnter", "InsertLeave" },
     pattern = "*",
     command = function()
       vim.opt.relativenumber = true
@@ -74,7 +74,7 @@ command.augroup("WindowBehaviours", {
   },
   {
     desc = "Un-highlight window when un-focused",
-    event = { "BufLeave", "WinLeave" },
+    event = { "BufLeave", "WinLeave", "InsertEnter" },
     pattern = "*",
     command = function()
       vim.opt.relativenumber = false

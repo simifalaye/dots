@@ -14,6 +14,17 @@ return {
         -- alternative styles: ┆ ┊ ╎
         symbol = "╎",
       })
+      -- Disable for certain filetypes
+      require("utils.command").augroup("MiniIndentscopeDisable", {
+        {
+          desc = "Highlight window when focused",
+          event = "BufEnter",
+          pattern = "*",
+          command = "if index(['fzf', 'help'], &ft) >= 0 "
+            .. "|| index(['nofile', 'terminal'], &bt) >= 0 "
+            .. "| let b:miniindentscope_disable=v:true | endif",
+        },
+      })
     end,
   },
   {
