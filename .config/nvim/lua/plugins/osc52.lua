@@ -2,18 +2,18 @@ return {
   {
     "ojroques/nvim-osc52",
     keys = {
-      { "<leader>y", mode = { "n", "x" } },
+      { "gy", mode = { "n", "x" } },
     },
     config = function()
       local m = require("utils.map")
       m.nnoremap(
-        "<leader>y",
+        "gy",
         require("osc52").copy_operator,
         "System yank",
         { expr = true }
       )
-      m.nmap("<leader>yy", "<leader>y_", "System yank line")
-      m.xmap("<leader>y", require("osc52").copy_visual, "System yank visual")
+      m.nmap("gyy", "gy_", "System yank line")
+      m.xmap("gy", require("osc52").copy_visual, "System yank visual")
     end,
   },
 }

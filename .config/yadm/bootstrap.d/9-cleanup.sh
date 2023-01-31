@@ -8,7 +8,6 @@ test -f "${HELPERS_D}"/common.sh && source "${HELPERS_D}"/common.sh
 # Files and directories that should be always removed
 # MUST be absolute paths
 REMOVE=(
-    "${HOME}"/.gitconfig
     "${HOME}"/.gitignore
     "${HOME}"/.lesshst
     "${HOME}"/.lesskey
@@ -20,6 +19,7 @@ REMOVE=(
     "${HOME}"/.tig_history
     "${HOME}"/.calc_history
     "${HOME}"/.python_history
+    "${HOME}"/.config/git/config
 )
 
 # DIRECTORIES that should exactly match git (remove extra local files)

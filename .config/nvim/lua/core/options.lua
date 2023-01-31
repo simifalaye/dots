@@ -1,37 +1,39 @@
 ---@diagnostic disable: assign-type-mismatch
-local opt = vim.opt
+local o = vim.opt
 local g = vim.g
 
 -- Misc
-opt.clipboard = ""
-opt.encoding = "utf-8"
-opt.matchpairs = { "(:)", "{:}", "[:]", "<:>" }
-opt.syntax = "enable"
+o.clipboard = ""
+o.encoding = "utf-8"
+o.matchpairs = { "(:)", "{:}", "[:]", "<:>" }
+o.syntax = "enable"
 
 -- Indention
-opt.autoindent = true
-opt.expandtab = true
-opt.shiftwidth = 2
-opt.shiftround = true
-opt.smartindent = true
-opt.softtabstop = 2
-opt.tabstop = 2
+o.autoindent = true
+o.expandtab = true
+o.shiftwidth = 2
+o.shiftround = true
+o.smartindent = true
+o.softtabstop = 2
+o.tabstop = 2
 
 -- Search
-opt.hlsearch = true
-opt.ignorecase = true
-opt.smartcase = true
-opt.wildignore = opt.wildignore
+o.hlsearch = true
+o.incsearch = true
+o.ignorecase = true
+o.infercase = true
+o.smartcase = true
+o.wildignore = o.wildignore
   + { "*/node_modules/*", "*/.git/*", "*/vendor/*" }
-opt.wildmenu = true
+o.wildmenu = true
 
 -- Ui
-opt.cmdheight = 0
-opt.cursorline = true
-opt.laststatus = 3 -- global statusline
-opt.lazyredraw = true
-opt.list = true
-opt.listchars = {
+o.cmdheight = 0
+o.cursorline = true
+o.laststatus = 3 -- global statusline
+o.lazyredraw = true
+o.list = true
+o.listchars = {
   tab = "»·",
   nbsp = "+",
   trail = "·",
@@ -39,46 +41,46 @@ opt.listchars = {
   precedes = "←",
   eol = nil,
 }
-opt.mouse = "a"
-opt.number = true
-opt.relativenumber = true
-opt.scrolloff = 10
-opt.sidescrolloff = 10 -- Lines to scroll horizontally
-opt.showmode = false
-opt.signcolumn = "yes"
-opt.splitbelow = true -- Open new split below
-opt.splitright = true -- Open new split to the right
-opt.wrap = false
-opt.showbreak = [[↪ ]] -- Options include -> '…', '↳ ', '→','↪ '
-opt.termguicolors = true
+o.mouse = "a"
+o.number = true
+o.relativenumber = true
+o.scrolloff = 10
+o.sidescrolloff = 10 -- Lines to scroll horizontally
+o.showmode = false
+o.signcolumn = "yes"
+o.splitbelow = true -- Open new split below
+o.splitright = true -- Open new split to the right
+o.wrap = false
+o.showbreak = [[↪ ]] -- Options include -> '…', '↳ ', '→','↪ '
+o.termguicolors = true
 
 -- Backups
-opt.backup = false
-opt.writebackup = false
-opt.swapfile = false
-opt.undofile = true
+o.backup = false
+o.writebackup = false
+o.swapfile = false
+o.undofile = true
 if vim.fn.isdirectory(vim.o.undodir) == 0 then
   vim.fn.mkdir(vim.o.undodir, "p")
 end
 
 -- Autocomplete
-opt.completeopt = { "menu", "menuone", "noselect" }
-opt.shortmess = opt.shortmess + { c = true }
+o.completeopt = { "menu", "menuone", "noselect" }
+o.shortmess = o.shortmess + { c = true }
 
 -- Perfomance
-opt.redrawtime = 1500
-opt.timeoutlen = 250
-opt.ttimeoutlen = 10
-opt.updatetime = 250
+o.redrawtime = 1500
+o.timeoutlen = 250
+o.ttimeoutlen = 10
+o.updatetime = 250
 
 -- Filetype
 g.do_filetype_lua = 1 -- use filetype.lua when possible
 
 -- Grep
-if _G.executable('rg') then -- Use faster grep if available
+if vim.fn.executable("rg") > 0 then -- Use faster grep if available
   vim.o.grepprg = [[rg --glob "!.git" --no-heading --vimgrep --follow $*]]
-  opt.grepformat = opt.grepformat ^ { '%f:%l:%c:%m' }
-elseif _G.executable('ag') then
+  o.grepformat = o.grepformat ^ { '%f:%l:%c:%m' }
+elseif vim.fn.executable("fzf") > 0 then
   vim.o.grepprg = [[ag --nogroup --nocolor --vimgrep]]
-  opt.grepformat = opt.grepformat ^ { '%f:%l:%c:%m' }
+  o.grepformat = o.grepformat ^ { '%f:%l:%c:%m' }
 end

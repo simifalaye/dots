@@ -2,7 +2,7 @@ return {
   {
     "ibhagwan/fzf-lua",
     lazy = false,
-    cond = _G.executable("fzf"),
+    cond = vim.fn.executable("fzf") > 0,
     branch = "main",
     dependencies = "nvim-tree/nvim-web-devicons",
     config = function()

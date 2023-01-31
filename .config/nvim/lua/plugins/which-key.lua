@@ -2,7 +2,7 @@ return {
   {
     "folke/which-key.nvim",
     event = "BufWinEnter",
-    config = {
+    opts = {
       plugins = {
         registers = false,
         spelling = true, -- Spelling hints with z=

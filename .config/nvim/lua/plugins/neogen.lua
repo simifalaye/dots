@@ -9,6 +9,6 @@ return {
       local m = require("utils.map")
       m.nnoremap("<leader>a", "<cmd>Neogen<CR>", "Generate (a)nnotation")
     end,
-    config = { snippet_engine = "luasnip" },
+    opts = { snippet_engine = "luasnip" },
   },
 }

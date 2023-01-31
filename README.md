@@ -67,7 +67,6 @@ yadm encrypt && yadm add ~/.local/share/yadm/archive
 - [atool](https://www.nongnu.org/atool/) - Archive manager
 - [bat](https://github.com/sharkdp/bat) - A better cat(1)
 - [bitwise](https://github.com/mellowcandle/bitwise) - Terminal bitwise calc
-- [bottom](https://github.com/ClementTsang/bottom) - A better top(1)
 - [calc](https://packages.ubuntu.com/focal/calc) - Terminal calc
 - [cheat](https://github.com/chubin/cheat.sh) - Cheatsheets from terminal
 - [cloc](http://cloc.sourceforge.net/) - Count lines of code
@@ -76,6 +75,7 @@ yadm encrypt && yadm add ~/.local/share/yadm/archive
 - [exa](https://github.com/ogham/exa) - Better ls(1)
 - [fd](https://github.com/sharkdp/fd) - Better find(1)
 - [fzf](https://github.com/junegunn/fzf) - Terminal fuzzy finder
+- [htop](https://htop.dev/) - A better top(1)
 - [jq](https://stedolan.github.io/jq/) - CLI JSON processor
 - [neovim](https://neovim.io/) - Best text editor!
 - [ripgrep](https://github.com/BurntSushi/ripgrep) - Better grep(1)

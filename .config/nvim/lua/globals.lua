@@ -52,13 +52,6 @@ _G.file_exists = function(name)
   end
 end
 
---- Check if a command is executable
---- @param e string
---- @return boolean
-_G.executable = function(e)
-  return vim.fn.executable(e) > 0
-end
-
 --- Join path segments based on os type
 --- @vararg string
 --- @return string
