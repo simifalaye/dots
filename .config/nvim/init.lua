@@ -6,12 +6,12 @@ Maintainer: simifalaye
 
 --]]
 
--- Load globals
-require("globals")
-
 -- Map leader (MUST come before lazy plugin manager)
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
+
+-- Load globals
+require("globals")
 
 -- Load core modules
 require("core.options")
