@@ -130,7 +130,7 @@ if ! is_callable exa; then
     fi
 fi
 
-nvim_ver="0.8.2"
+nvim_ver="0.8.3"
 if ! is_callable nvim || \
     [[ "$nvim_ver" != "$(nvim --version | head -1 | grep -o '[0-9]\.[0-9]\.[0-9]')" ]]; then
     dir=~/.local/bin/nvim-linux64

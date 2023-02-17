@@ -1,7 +1,7 @@
 return {
   {
     "echasnovski/mini.indentscope",
-    version = false,
+    version = "*",
     event = "BufRead",
     config = function()
       local indentscope = require("mini.indentscope")
@@ -29,14 +29,19 @@ return {
   },
   {
     "echasnovski/mini.surround",
-    version = false,
-    event = "BufRead",
+    version = "*",
+    keys = {
+      { "sa", desc = "Surround add", mode = { "n", "x" } },
+      { "sd", desc = "Surround delete"},
+      { "sr", desc = "Surround replace"},
+      { "sf", desc = "Surround find"},
+      { "sF", desc = "Surround find left"},
+      { "sh", desc = "Surround highlight"},
+    },
     config = function()
       local surround = require("mini.surround")
       surround.setup({
         mappings = {
-          find = "",
-          find_left = "",
           update_n_lines = "",
         },
         -- Number of lines within which surrounding is searched
@@ -45,6 +50,34 @@ return {
         -- neighborhood). One of 'cover', 'cover_or_next', 'cover_or_prev',
         -- 'cover_or_nearest'. For more details, see `:h MiniSurround.config`.
         search_method = "cover_or_next",
+      })
+    end,
+  },
+  {
+    "echasnovski/mini.move",
+    version = "*",
+    keys = {
+      { "<C-left>", mode = { "n", "x" } },
+      { "<C-right>", mode = { "n", "x" } },
+      { "<C-down>", mode = { "n", "x" } },
+      { "<C-up>", mode = { "n", "x" } },
+    },
+    config = function()
+      local move = require("mini.move")
+      move.setup({
+        mappings = {
+          -- Move visual selection in Visual mode. Defaults are Alt (Meta) + hjkl.
+          left = "<C-left>",
+          right = "<C-right>",
+          down = "<C-down>",
+          up = "<C-up>",
+
+          -- Move current line in Normal mode
+          line_left = "<C-left>",
+          line_right = "<C-right>",
+          line_down = "<C-down>",
+          line_up = "<C-up>",
+        },
       })
     end,
   },

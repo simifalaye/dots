@@ -106,7 +106,6 @@ end
 return {
   {
     "neovim/nvim-lspconfig",
-    event = "BufReadPre",
     dependencies = {
       "nvim-lua/plenary.nvim",
       "folke/neodev.nvim",
@@ -115,6 +114,7 @@ return {
       "williamboman/mason-lspconfig.nvim",
       "jayp0521/mason-null-ls.nvim",
     },
+    event = "BufReadPre",
     config = function()
       local lspconfig = require("lspconfig")
       local null_ls = require("null-ls")
@@ -146,7 +146,7 @@ return {
       -- Setup lspconfig with mason
       local mason_lspconfig = require("mason-lspconfig")
       mason_lspconfig.setup({
-        ensure_installed = { "sumneko_lua", "bashls" },
+        ensure_installed = { "lua_ls", "bashls" },
         automatic_installation = true,
       })
       mason_lspconfig.setup_handlers({
@@ -165,6 +165,15 @@ return {
           }
           opts = vim.tbl_deep_extend("force", default_opts, opts)
           lspconfig["clangd"].setup(opts)
+        end,
+        yamlls = function()
+          local opts = {
+            yaml = {
+              schemaStore = { enable = true },
+            },
+          }
+          opts = vim.tbl_deep_extend("force", default_opts, opts)
+          lspconfig["yamlls"].setup(opts)
         end,
       })
 

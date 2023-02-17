@@ -8,16 +8,20 @@ return {
       "MunifTanjim/nui.nvim",
     },
     cmd = { "Neotree" },
+    keys = {
+      { "-", "<cmd>Neotree toggle<CR>", desc = "Explorer" },
+      { "_", "<cmd>Neotree reveal<CR>", desc = "Open file in explorer" },
+    },
     init = function()
-      -- Setup keybinds
-      local m = require("utils.map")
-      m.nnoremap("-", "<cmd>Neotree toggle<CR>", "Explorer")
-      m.nnoremap("_", "<cmd>Neotree reveal<CR>", "Open file in explorer")
       -- Start neo-tree when a directory is given or no arguments
       vim.cmd([[autocmd StdinReadPre * let s:std_in=1]])
-      vim.cmd([[autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists('s:std_in') |
-        \ execute 'Neotree position=current' argv()[0] | wincmd p | enew | execute 'cd '.argv()[0] | endif]])
-      vim.cmd([[autocmd VimEnter * if argc() == 0 && !exists('s:std_in') | execute 'Neotree position=current' | endif]])
+      vim.cmd(
+        [[autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists('s:std_in') |
+        \ execute 'Neotree position=current' argv()[0] | wincmd p | enew | execute 'cd '.argv()[0] | endif]]
+      )
+      vim.cmd(
+        [[autocmd VimEnter * if argc() == 0 && !exists('s:std_in') | execute 'Neotree position=current' | endif]]
+      )
     end,
     config = function()
       local tree = require("neo-tree")
@@ -55,7 +59,7 @@ return {
 
       local nlog = _G.prequire("neo-tree.log")
       if nlog then
-        nlog.new({level = "warn"}, true)
+        nlog.new({ level = "warn" }, true)
       end
     end,
   },

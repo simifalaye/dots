@@ -65,7 +65,7 @@ end
 
 -- Autocomplete
 o.completeopt = { "menu", "menuone", "noselect" }
-o.shortmess = o.shortmess + { c = true }
+o.shortmess = o.shortmess + { c = true, I = true }
 
 -- Perfomance
 o.redrawtime = 1500

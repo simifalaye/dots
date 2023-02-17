@@ -5,10 +5,9 @@ return {
       "nvim-treesitter/nvim-treesitter",
     },
     cmd = { "Neogen" },
-    init = function()
-      local m = require("utils.map")
-      m.nnoremap("<leader>a", "<cmd>Neogen<CR>", "Generate (a)nnotation")
-    end,
+    keys = {
+      { "<leader>a", "<cmd>Neogen<CR>", desc = "Generate (a)nnotations" },
+    },
     opts = { snippet_engine = "luasnip" },
   },
 }

@@ -1,10 +1,10 @@
 return {
   {
     "ibhagwan/fzf-lua",
-    lazy = false,
-    cond = vim.fn.executable("fzf") > 0,
     branch = "main",
     dependencies = "nvim-tree/nvim-web-devicons",
+    cond = vim.fn.executable("fzf") > 0,
+    lazy = false,
     config = function()
       local fzf = require("fzf-lua")
 
@@ -12,15 +12,16 @@ return {
       -- -------------
       local m = require("utils.map")
       -- root
+      m.nnoremap("<C-\\>", fzf.buffers, "Find Buffer")
       m.nnoremap("<C-f>", fzf.live_grep, "Find text")
-      m.nnoremap("<C-p>", fzf.files, "Find Files")
+      m.nnoremap("<C-p>", fzf.files, "Find File")
       m.nnoremap("<leader>.", fzf.resume, "Find resume")
       m.nnoremap("<leader>,", fzf.builtin, "Find Show")
-      m.nnoremap("<leader>;", fzf.buffers, "Find Buffer")
       m.nnoremap("<leader>'", function()
         fzf.oldfiles({ cwd_only = true })
       end, "Find Recents (cwd)")
       m.nnoremap('<leader>"', fzf.oldfiles, "Find Recents")
+      m.nnoremap("<leader>;", fzf.help_tags, "Find Help Tags")
       m.nnoremap("<leader>:", fzf.command_history, "Find Command History")
       m.nnoremap("<leader>/", fzf.search_history, "Find Search History")
 
@@ -35,7 +36,6 @@ return {
           rg_opts = "--no-ignore --color=never --files --hidden --follow -g '!.git'",
         })
       end, "Files (all)")
-      m.nnoremap("<leader>fh", fzf.help_tags, "Help tags")
       m.nnoremap("<leader>fk", fzf.keymaps, "Keymaps")
       m.nnoremap("<leader>fm", fzf.man_pages, "Man Pages")
       m.nnoremap("<leader>fq", fzf.quickfix, "Quickfix")

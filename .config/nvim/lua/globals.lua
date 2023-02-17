@@ -1,5 +1,3 @@
-_G._store = _G._store or {}
-
 -- Path separator based on os
 _G.path_sep = vim.loop.os_uname().version:match("Windows") and "\\" or "/"
 

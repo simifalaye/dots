@@ -1,28 +1,24 @@
 return {
   {
     "gbprod/substitute.nvim",
-    event = "BufRead",
-    config = function()
-      -- Setup plugin
-      require("substitute").setup()
-
-      -- Setup keybinds
-      local m = require("utils.map")
-      m.nnoremap(
+    keys = {
+      {
         "R",
         "<cmd>lua require('substitute').operator()<cr>",
-        "Substitute"
-      )
-      m.nnoremap(
+        desc = "Substitute",
+      },
+      {
         "RR",
         "<cmd>lua require('substitute').line()<cr>",
-        "Substitute line"
-      )
-      m.xnoremap(
+        desc = "Substitute line",
+      },
+      {
         "R",
         "<cmd>lua require('substitute').visual()<cr>",
-        "Substitute"
-      )
-    end,
+        desc = "Substitute",
+        mode = "x",
+      },
+    },
+    config = true,
   },
 }

@@ -1,8 +1,4 @@
-local api = vim.api
 local log = require("utils.log")
-
-_G._store["keymaps"] = _G._store["keymaps"] or {}
-local map_store = _G._store["keymaps"]
 
 local M = {}
 
@@ -26,9 +22,6 @@ local function make_mapper(mode, o)
       opts.desc = desc
     end
     vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("keep", opts, parent_opts))
-    if opts.buffer == nil then
-      table.insert(map_store, { mode = mode, lhs = lhs })
-    end
     log.debug("Keymap {%s, %s, %s}", mode, lhs, rhs)
   end
 end
@@ -89,20 +82,6 @@ M.group = function(prefix, name)
     wk.register({ [prefix] = { name = name } })
     log.debug("Key Group {%s, %s}", prefix, name)
   end
-end
-
---- Unmap all user keymappings
-M.unmap_all = function()
-  -- Unbind keys
-  for _, v in pairs(map_store) do
-    if v.mode and v.lhs then
-      local _, _ = pcall(api.nvim_del_keymap, v.mode, v.lhs)
-      log.debug("Unmap {%s, %s}", v.mode, v.lhs)
-    end
-  end
-  log.debug("All global user keys have been unbound")
-  -- Reset stored keys
-  map_store = {}
 end
 
 return M

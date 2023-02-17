@@ -1,9 +1,9 @@
 return {
   {
     "lewis6991/gitsigns.nvim",
+    tag = "release",
     dependencies = { "nvim-lua/plenary.nvim" },
     event = "BufReadPre",
-    tag = "release", -- To use the latest release
     config = function()
       local gs = require("gitsigns")
 

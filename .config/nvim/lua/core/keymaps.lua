@@ -54,8 +54,6 @@ m.nmap(
 -- (g) namespace
 m.nmap("g-", "yyp^v$r-Vk", "Underline -")
 m.nmap("g=", "yyp^v$r=Vk", "Underline =")
-m.nnoremap("g[", "<cmd>move-2<CR>==", "Move line up")
-m.nnoremap("g]", "<cmd>move+<CR>==", "Move line down")
 m.nnoremap(
   "gm",
   [[<cmd>set nomore<bar>40messages<bar>set more<CR>]],
@@ -139,10 +137,6 @@ m.xnoremap(
   "Q macro over range",
   { silent = false }
 )
-
--- (g) namespace
-m.xnoremap("g[", ":move-2<CR>='[gv", "Move line up")
-m.xnoremap("g]", ":move'>+<CR>='[gv", "Move line down")
 
 -- Text objects
 m.xnoremap("il", "g_o0", "in line")

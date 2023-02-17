@@ -8,8 +8,6 @@ return {
       { "g>", mode = { "n", "v" } },
       { "g<", mode = { "n", "v" } },
     },
-    config = function()
-      require("Comment").setup({})
-    end,
+    config = true,
   },
 }
