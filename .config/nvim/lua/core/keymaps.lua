@@ -77,26 +77,6 @@ m.nnoremap(
 )
 m.nnoremap("gl", ":OpenLink<CR>", "Open link in browser")
 
--- ([/]) namespace
-m.nnoremap("[a", ":prev<CR>", "Prev arg")
-m.nnoremap("]a", ":next<CR>", "Next arg")
-m.nnoremap("[b", ":bprev<CR>", "Prev buffer")
-m.nnoremap("]b", ":bnext<CR>", "Next buffer")
-m.nnoremap("[l", ":lprev<CR>", "Prev loclist item")
-m.nnoremap("]l", ":lnext<CR>", "Next loclist item")
-m.nnoremap("[L", ":lfirst<CR>", "First loclist item")
-m.nnoremap("]L", ":llast<CR>", "Last loclist item")
-m.nnoremap("[<C-l>", ":lpfile<CR>", "Prev loclist file")
-m.nnoremap("]<C-l>", ":lnfile<CR>", "Next loclist file")
-m.nnoremap("[q", ":cprev<CR>", "Prev qflist item")
-m.nnoremap("]q", ":cnext<CR>", "Next qflist item")
-m.nnoremap("[Q", ":cfirst<CR>", "First qflist item")
-m.nnoremap("]Q", ":clast<CR>", "Last qflist item")
-m.nnoremap("[<C-q>", ":cpfile<CR>", "Prev qflist file")
-m.nnoremap("]<C-q>", ":cnfile<CR>", "Next qflist file")
-m.nnoremap("[t", ":tabprevious<CR>", "Prev tab")
-m.nnoremap("]t", ":tabnext<CR>", "Next tab")
-
 -- Toggle windows
 m.nnoremap("<F3>", ":ToggleList c<CR>", "Toggle Quickfix")
 m.nnoremap("<F4>", ":ToggleList c<CR>", "Toggle Quickfix")

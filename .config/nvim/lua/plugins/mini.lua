@@ -5,7 +5,7 @@ return {
     event = "BufRead",
     config = function()
       local indentscope = require("mini.indentscope")
-      indentscope.setup({
+      require("mini.indentscope").setup({
         draw = {
           delay = 0,
           animation = indentscope.gen_animation.none(),
@@ -32,15 +32,14 @@ return {
     version = "*",
     keys = {
       { "sa", desc = "Surround add", mode = { "n", "x" } },
-      { "sd", desc = "Surround delete"},
-      { "sr", desc = "Surround replace"},
-      { "sf", desc = "Surround find"},
-      { "sF", desc = "Surround find left"},
-      { "sh", desc = "Surround highlight"},
+      { "sd", desc = "Surround delete" },
+      { "sr", desc = "Surround replace" },
+      { "sf", desc = "Surround find" },
+      { "sF", desc = "Surround find left" },
+      { "sh", desc = "Surround highlight" },
     },
     config = function()
-      local surround = require("mini.surround")
-      surround.setup({
+      require("mini.surround").setup({
         mappings = {
           update_n_lines = "",
         },
@@ -63,8 +62,7 @@ return {
       { "<C-up>", mode = { "n", "x" } },
     },
     config = function()
-      local move = require("mini.move")
-      move.setup({
+      require("mini.move").setup({
         mappings = {
           -- Move visual selection in Visual mode. Defaults are Alt (Meta) + hjkl.
           left = "<C-left>",
@@ -80,5 +78,13 @@ return {
         },
       })
     end,
+  },
+  {
+    "echasnovski/mini.bracketed",
+    version = false,
+    lazy = false,
+    config = function ()
+      require("mini.bracketed").setup()
+    end
   },
 }
