@@ -1,0 +1,11 @@
+{{ if and (eq .chezmoi.os "darwin" "linux") (not .ephemeral) -}}
+#!/bin/sh
+
+script="{{ .chezmoi.workingTree }}/scripts/setup-ssh.sh"
+if ! -x "${script}"; then
+    echo "Error: Missing script '${script}'!" >&2
+    exit 1
+fi
+
+"${script}" "{{ .email }}" "$HOME/.ssh/id_ed25519" "{{ .chezmoi.sourceDir }}"
+{{ end }}
