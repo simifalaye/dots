@@ -35,12 +35,17 @@ function Get-ActivePowerScheme {
 }
 
 function Get-HibernationEnabled {
-    $value = Get-ItemPropertyValue `
-        -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\Power' `
-        -Name 'HibernateEnabled' `
-        -ErrorAction SilentlyContinue
+    try {
+        $value = Get-ItemPropertyValue `
+            -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\Power' `
+            -Name 'HibernateEnabled' `
+            -ErrorAction Stop
 
-    return $value -eq 1
+        return $value -eq 1
+    }
+    catch {
+        return $false
+    }
 }
 
 function Get-ActiveStandbyTimeout {

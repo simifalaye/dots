@@ -5,19 +5,6 @@
 $ErrorActionPreference = 'Stop'
 
 $Settings = @(
-    # Explorer
-    @{
-        Path  = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-        Name  = 'Hidden'
-        Type  = 'DWord'
-        Value = 1
-    }
-    @{
-        Path  = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-        Name  = 'HideFileExt'
-        Type  = 'DWord'
-        Value = 0
-    }
     @{
         Path  = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState'
         Name  = 'FullPath'
@@ -41,30 +28,6 @@ $Settings = @(
     @{
         Path  = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search'
         Name  = 'SearchboxTaskbarMode'
-        Type  = 'DWord'
-        Value = 0
-    }
-    @{
-        Path  = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-        Name  = 'ShowTaskViewButton'
-        Type  = 'DWord'
-        Value = 0
-    }
-    @{
-        Path  = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-        Name  = 'TaskbarDa'
-        Type  = 'DWord'
-        Value = 0
-    }
-    @{
-        Path  = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-        Name  = 'TaskbarMn'
-        Type  = 'DWord'
-        Value = 0
-    }
-    @{
-        Path  = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-        Name  = 'TaskbarAl'
         Type  = 'DWord'
         Value = 0
     }
@@ -97,24 +60,6 @@ $Settings = @(
         Name  = 'WindowArrangementActive'
         Type  = 'String'
         Value = '0'
-    }
-    @{
-        Path  = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-        Name  = 'SnapFill'
-        Type  = 'DWord'
-        Value = 0
-    }
-    @{
-        Path  = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-        Name  = 'SnapAssist'
-        Type  = 'DWord'
-        Value = 0
-    }
-    @{
-        Path  = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-        Name  = 'JointResize'
-        Type  = 'DWord'
-        Value = 0
     }
 
     # Tablet / typing
