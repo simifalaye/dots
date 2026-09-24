@@ -1,0 +1,89 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$ErrorActionPreference = 'Stop'
+
+# These settings modify HKLM and therefore require elevation.
+$isAdministrator = (
+    [Security.Principal.WindowsPrincipal]::new(
+        [Security.Principal.WindowsIdentity]::GetCurrent()
+    )
+).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+if (-not $isAdministrator) {
+    throw 'This script must be run as Administrator.'
+}
+
+$Settings = @(
+    # Diagnostics / telemetry
+    @{
+        Path  = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection'
+        Name  = 'AllowTelemetry'
+        Type  = 'DWord'
+        Value = 1
+    }
+    @{
+        Path  = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection'
+        Name  = 'MaxTelemetryAllowed'
+        Type  = 'DWord'
+        Value = 1
+    }
+
+    # Startup sound
+    @{
+        Path  = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+        Name  = 'DisableStartupSound'
+        Type  = 'DWord'
+        Value = 1
+    }
+    @{
+        Path  = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\BootAnimation'
+        Name  = 'DisableStartupSound'
+        Type  = 'DWord'
+        Value = 1
+    }
+    @{
+        Path  = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\EditionOverrides'
+        Name  = 'UserSetting_DisableStartupSound'
+        Type  = 'DWord'
+        Value = 1
+    }
+)
+
+Write-Host "Configuring machine settings..."
+
+foreach ($Setting in $Settings) {
+    $path = $Setting.Path
+    $name = $Setting.Name
+    $type = $Setting.Type
+    $value = $Setting.Value
+
+    # Create the registry key if it doesn't exist.
+    if (-not (Test-Path -LiteralPath $path)) {
+        New-Item -Path $path -Force | Out-Null
+    }
+
+    $key = Get-Item -LiteralPath $path
+    $exists = $key.GetValueNames() -contains $name
+
+    # Check both the registry type and value.
+    $needsUpdate = (
+        -not $exists -or
+        $key.GetValueKind($name).ToString() -ne $type -or
+        $key.GetValue($name) -cne $value
+    )
+
+    if ($needsUpdate) {
+        Write-Host "Setting $path\$name = $value"
+
+        New-ItemProperty `
+            -LiteralPath $path `
+            -Name $name `
+            -PropertyType $type `
+            -Value $value `
+            -Force | Out-Null
+    }
+}
+
+{{ end -}}

@@ -1,0 +1,25 @@
+{{ if ne .chezmoi.os "darwin" }}
+.chezmoiscripts/darwin/**
+.config/aerospace
+.config/homebrew
+.hammerspoon
+{{ end }}
+
+{{ if ne .chezmoi.os "linux" }}
+.chezmoiscripts/linux/**
+{{ end }}
+
+{{ if ne .chezmoi.os "windows" }}
+.chezmoiscripts/windows/**
+Documents
+{{ else }}
+.bash_logout
+.bash_profile
+.bashenv
+.bashrc
+.zlogout
+.zprofile
+.zshenv
+.zshrc
+.config/shrc
+{{ end }}

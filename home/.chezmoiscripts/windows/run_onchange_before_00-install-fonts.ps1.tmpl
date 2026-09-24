@@ -1,0 +1,31 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$fonts = @(
+    'jetbrains-mono'
+    'fira-code'
+)
+
+$fontPath = Join-Path $env:WINDIR 'Fonts'
+
+$missingFonts = foreach ($font in $fonts) {
+    $pattern = "$($font -replace '-', '')NerdFont*.ttf"
+
+    if (-not (Get-ChildItem -Path $fontPath -Filter $pattern -ErrorAction SilentlyContinue)) {
+        $font
+    }
+}
+
+if (-not $missingFonts) {
+    Write-Host 'All Nerd Fonts are already installed.'
+    return
+}
+
+Write-Host "Installing Nerd Fonts: $($missingFonts -join ', ')..."
+
+& ([scriptblock]::Create(
+    (Invoke-WebRequest -UseBasicParsing 'https://to.loredo.me/Install-NerdFont.ps1').Content
+)) -Confirm:$false -Scope AllUsers -Name $missingFonts
+
+{{ end -}}

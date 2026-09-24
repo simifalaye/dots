@@ -1,0 +1,13 @@
+{{- if ne .chezmoi.os "windows" }}
+.inputrc
+.psqlrc
+.tmux.conf
+.lesshst
+.lesskey
+.viminfo
+.tig_history
+.calc_history
+.zcompdump
+{{ end }}
+
+.config/wezterm

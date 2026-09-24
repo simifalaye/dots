@@ -1,0 +1,46 @@
+# vim: ft=toml
+
+{{ if not .ephemeral }}
+
+{{- if eq .chezmoi.os "linux" }}
+
+[".local/bin/age"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "FiloSottile/age" (printf "age-*-%s-%s.tar.gz" .chezmoi.os .chezmoi.arch) | quote }}
+    executable = true
+    path = "age/age"
+
+[".local/bin/age-keygen"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "FiloSottile/age" (printf "age-*-%s-%s.tar.gz" .chezmoi.os .chezmoi.arch) | quote }}
+    executable = true
+    path = "age/age-keygen"
+
+[".local/bin/croc"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "schollz/croc" "croc_v*_Linux-64bit.tar.gz" | quote }}
+    executable = true
+    path = "croc"
+
+[".local/bin/eza"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "eza-community/eza" "eza_x86_64-unknown-linux-gnu.tar.gz" | quote }}
+    executable = true
+    path = "./eza"
+
+[".local/bin/gdu"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "dundee/gdu" (printf "gdu_%s_%s.tgz" .chezmoi.os .chezmoi.arch) | quote }}
+    executable = true
+    path = "gdu_linux_amd64"
+
+[".local/bin/gh"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "cli/cli" (printf "gh_*_%s_%s.tar.gz" .chezmoi.os .chezmoi.arch) | quote }}
+    executable = true
+    stripComponents = 1
+    path = "bin/gh"
+
+{{ end }}
+
+{{ end }}

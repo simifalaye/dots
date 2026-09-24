@@ -1,0 +1,38 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+function Install-AppIfMissing {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string[]]$AppIds
+    )
+
+    foreach ($AppId in $AppIds) {
+        $isInstalled = winget list --id $AppId 2>$null | Select-String $AppId
+
+        if (-not $isInstalled) {
+            Write-Info "Installing $AppId..."
+            winget install --id $AppId --accept-package-agreements --accept-source-agreements
+        }
+    }
+}
+
+{{ $packages := list
+    "Git.Git"
+    "GitHub.cli"
+    "Alacritty.Alacritty"
+    "Brave.Brave"
+    "Dropbox.Dropbox"
+    "equalsraf.win32yank"
+    "Microsoft.WindowsTerminal" -}}
+
+Write-Host "Installing packages..." -ForegroundColor Cyan
+
+Install-AppIfMissing -AppIds @(
+{{ range $packages -}}
+    "{{ . }}"
+{{ end -}}
+)
+
+{{ end -}}

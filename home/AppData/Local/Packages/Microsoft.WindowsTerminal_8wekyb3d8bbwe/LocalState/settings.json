@@ -1,0 +1,511 @@
+{
+    "$help": "https://aka.ms/terminal-documentation",
+    "$schema": "https://aka.ms/terminal-profiles-schema",
+    "actions":
+    [
+        { "command": "tabSearch", "id": "User.TabSearch" },
+        { "command": { "action": "prevTab", "tabSwitcherMode": "mru" }, "id": "User.PrevTabMru" },
+        { "command": { "action": "nextTab", "tabSwitcherMode": "mru" }, "id": "User.NextTabMru" },
+        {
+            "command":
+            {
+                "action": "splitPane",
+                "split": "auto",
+                "profile": "Ubuntu",
+                "commandline": "wsl.exe -d Ubuntu --cd ~/notes zsh -lic 'nvim'"
+            },
+            "id": "User.SplitNotesAuto"
+        }
+    ],
+    "copyFormatting": "none",
+    "copyOnSelect": false,
+    "defaultProfile": "{cefedc47-25a3-5baf-aa27-fad93c2bd95b}",
+    "disableAnimations": true,
+    "historySize": 20000,
+    "keybindings":
+    [
+        { "keys": "ctrl+shift+m", "id": "Terminal.ToggleMarkMode" },
+        {
+            "id" : null, "keys" : ["ctrl+v"]
+        },
+        {
+            "id": "Terminal.ExportBuffer",
+            "keys": "alt+`"
+        },
+        {
+            "id": "Terminal.SwapPaneFirst",
+            "keys": "alt+,"
+        },
+        {
+            "id": "Terminal.SwitchToTab1",
+            "keys": "alt+2"
+        },
+        {
+            "id": "User.SplitNotesAuto",
+            "keys": "alt+o"
+        },
+        {
+            "id": "Terminal.SwitchToTab0",
+            "keys": "alt+1"
+        },
+        {
+            "id": "Terminal.CloseWindow",
+            "keys": "alt+f4"
+        },
+        {
+            "id": "Terminal.MovePaneToTab7",
+            "keys": "alt+shift+8"
+        },
+        {
+            "id": "Terminal.FindText",
+            "keys": "ctrl+shift+f"
+        },
+        {
+            "id": "Terminal.SwitchToTab3",
+            "keys": "alt+4"
+        },
+        {
+            "id": "Terminal.ToggleFullscreen",
+            "keys": "f11"
+        },
+        {
+            "id": "Terminal.NextTab",
+            "keys": "alt+]"
+        },
+        {
+            "id": "Terminal.MoveFocusLeft",
+            "keys": "alt+h"
+        },
+        {
+            "id": "Terminal.MovePaneToTab5",
+            "keys": "alt+shift+6"
+        },
+        {
+            "id": "Terminal.ToggleFullscreen",
+            "keys": "alt+enter"
+        },
+        {
+            "id": "Terminal.OpenNewWindow",
+            "keys": "ctrl+alt+shift+n"
+        },
+        {
+            "id": "Terminal.ResizePaneLeft",
+            "keys": "ctrl+alt+h"
+        },
+        {
+            "id": "Terminal.IncreaseFontSize",
+            "keys": "ctrl+plus"
+        },
+        {
+            "id": "Terminal.DecreaseFontSize",
+            "keys": "ctrl+minus"
+        },
+        {
+            "id": "Terminal.DuplicatePaneAuto",
+            "keys": "alt+/"
+        },
+        {
+            "id": "Terminal.DuplicateTab",
+            "keys": "alt+c"
+        },
+        {
+            "id": "User.TabSearch",
+            "keys": "alt+;"
+        },
+        {
+            "id": "User.PrevTabMru",
+            "keys": "alt+,"
+        },
+        {
+            "id": "User.NextTabMru",
+            "keys": "alt+."
+        },
+        {
+            "id": "Terminal.PrevTab",
+            "keys": "alt+["
+        },
+        {
+            "id": "Terminal.ScrollUp",
+            "keys": "alt+y"
+        },
+        {
+            "id": "Terminal.SwitchToTab2",
+            "keys": "alt+3"
+        },
+        {
+            "id": "Terminal.SwitchToTab4",
+            "keys": "alt+5"
+        },
+        {
+            "id": "Terminal.MovePaneToTab0",
+            "keys": "alt+shift+1"
+        },
+        {
+            "id": "Terminal.SwitchToTab5",
+            "keys": "alt+6"
+        },
+        {
+            "id": "Terminal.SwitchToTab6",
+            "keys": "alt+7"
+        },
+        {
+            "id": "Terminal.OpenTabRenamer",
+            "keys": "alt+r"
+        },
+        {
+            "id": "Terminal.SwitchToTab7",
+            "keys": "alt+8"
+        },
+        {
+            "id": "Terminal.MoveTabBackward",
+            "keys": "alt+shift+["
+        },
+        {
+            "id": "Terminal.SwapPaneLeft",
+            "keys": "alt+shift+h"
+        },
+        {
+            "id": "Terminal.MoveTabForward",
+            "keys": "alt+shift+]"
+        },
+        {
+            "id": "Terminal.OpenWindowRenamer",
+            "keys": "ctrl+alt+shift+r"
+        },
+        {
+            "id": "Terminal.MovePaneToTab3",
+            "keys": "alt+shift+4"
+        },
+        {
+            "id": "Terminal.ScrollDownPage",
+            "keys": "alt+d"
+        },
+        {
+            "id": "Terminal.IdentifyWindow",
+            "keys": "ctrl+alt+shift+i"
+        },
+        {
+            "id": "Terminal.DuplicatePaneDown",
+            "keys": "alt+s"
+        },
+        {
+            "id": "Terminal.MovePaneToTab1",
+            "keys": "alt+shift+2"
+        },
+        {
+            "id": "Terminal.DuplicatePaneRight",
+            "keys": "alt+v"
+        },
+        {
+            "id": "Terminal.ClosePane",
+            "keys": "alt+x"
+        },
+        {
+            "id": "Terminal.SwapPaneUp",
+            "keys": "alt+shift+k"
+        },
+        {
+            "id": "Terminal.TogglePaneZoom",
+            "keys": "alt+z"
+        },
+        {
+            "id": "Terminal.PasteFromClipboard",
+            "keys": "ctrl+shift+v"
+        },
+        {
+            "id": "Terminal.RestartConnection",
+            "keys": "alt+shift+r"
+        },
+        {
+            "id": "Terminal.ScrollDown",
+            "keys": "alt+e"
+        },
+        {
+            "id": "Terminal.MoveFocusDown",
+            "keys": "alt+j"
+        },
+        {
+            "id": "Terminal.MoveFocusUp",
+            "keys": "alt+k"
+        },
+        {
+            "id": "Terminal.IncreaseFontSize",
+            "keys": "ctrl+numpad_plus"
+        },
+        {
+            "id": "Terminal.MoveFocusRight",
+            "keys": "alt+l"
+        },
+        {
+            "id": "Terminal.MovePaneToTab4",
+            "keys": "alt+shift+5"
+        },
+        {
+            "id": "Terminal.MoveFocusPrevious",
+            "keys": "alt+\\"
+        },
+        {
+            "id": "Terminal.ScrollUpPage",
+            "keys": "alt+u"
+        },
+        {
+            "id": "Terminal.ResizePaneUp",
+            "keys": "ctrl+alt+k"
+        },
+        {
+            "id": "Terminal.ResizePaneRight",
+            "keys": "ctrl+alt+l"
+        },
+        {
+            "id": "Terminal.SwapPaneDown",
+            "keys": "alt+shift+j"
+        },
+        {
+            "id": "Terminal.SwapPaneRight",
+            "keys": "alt+shift+l"
+        },
+        {
+            "id": "Terminal.ResizePaneDown",
+            "keys": "ctrl+alt+j"
+        },
+        {
+            "id": "Terminal.MovePaneToTab2",
+            "keys": "alt+shift+3"
+        },
+        {
+            "id": "Terminal.MovePaneToTab6",
+            "keys": "alt+shift+7"
+        },
+        {
+            "id": "Terminal.DecreaseFontSize",
+            "keys": "ctrl+numpad_minus"
+        },
+        {
+            "id": "Terminal.CopyToClipboard",
+            "keys": "ctrl+c"
+        },
+        {
+            "id": "Terminal.ExportBuffer",
+            "keys": "ctrl+shift+c"
+        },
+        {
+            "id": null,
+            "keys": "win+sc(41)"
+        },
+        {
+            "id": "Terminal.QuakeMode",
+            "keys": "win+\\"
+        }
+    ],
+    "newTabMenu":
+    [
+        {
+            "type": "remainingProfiles"
+        }
+    ],
+    "newTabPosition": "afterCurrentTab",
+    "profiles":
+    {
+        "defaults":
+        {
+            "bellStyle": "none",
+            "closeOnExit": "graceful",
+            "colorScheme":
+            {
+                "dark": "Tokyo Night",
+                "light": "Tokyo Night Day"
+            },
+            "font":
+            {
+                "face": "JetBrainsMono Nerd Font"
+            },
+            "padding": "0,0,0,0",
+            "pathTranslationStyle": "wsl"
+        },
+        "list":
+        [
+            {
+                "commandline": "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+                "hidden": false,
+                "name": "Windows PowerShell"
+            },
+            {
+                "commandline": "%SystemRoot%\\System32\\cmd.exe",
+                "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+                "hidden": false,
+                "name": "Command Prompt"
+            },
+            {
+                "commandline": "C:\\WINDOWS\\system32\\wsl.exe -d Ubuntu",
+                "guid": "{cefedc47-25a3-5baf-aa27-fad93c2bd95b}",
+                "hidden": false,
+                "name": "Ubuntu",
+                "source": "Microsoft.WSL"
+            }
+        ]
+    },
+    "schemes":
+    [
+        {
+            "background": "#e1e2e7",
+            "black": "#b4b5b9",
+            "blue": "#2e7de9",
+            "brightBlack": "#a1a6c5",
+            "brightBlue": "#2e7de9",
+            "brightCyan": "#007197",
+            "brightGreen": "#587539",
+            "brightPurple": "#7847bd",
+            "brightRed": "#f52a65",
+            "brightWhite": "#3760bf",
+            "brightYellow": "#8c6c3e",
+            "cursorColor": "#3760bf",
+            "cyan": "#007197",
+            "foreground": "#3760bf",
+            "green": "#587539",
+            "name": "Tokyo Night Day",
+            "purple": "#9854f1",
+            "red": "#f52a65",
+            "selectionBackground": "#b7c1e3",
+            "white": "#6172b0",
+            "yellow": "#8c6c3e"
+        },
+        {
+            "background": "#222436",
+            "black": "#1b1d2b",
+            "blue": "#82aaff",
+            "brightBlack": "#444a73",
+            "brightBlue": "#82aaff",
+            "brightCyan": "#86e1fc",
+            "brightGreen": "#c3e88d",
+            "brightPurple": "#fca7ea",
+            "brightRed": "#ff757f",
+            "brightWhite": "#c8d3f5",
+            "brightYellow": "#ffc777",
+            "cursorColor": "#c8d3f5",
+            "cyan": "#86e1fc",
+            "foreground": "#c8d3f5",
+            "green": "#c3e88d",
+            "name": "Tokyo Night Moon",
+            "purple": "#c099ff",
+            "red": "#ff757f",
+            "selectionBackground": "#2d3f76",
+            "white": "#828bb8",
+            "yellow": "#ffc777"
+        },
+        {
+            "background": "#1a1b26",
+            "black": "#15161e",
+            "blue": "#7aa2f7",
+            "brightBlack": "#414868",
+            "brightBlue": "#7aa2f7",
+            "brightCyan": "#7dcfff",
+            "brightGreen": "#9ece6a",
+            "brightPurple": "#9d7cd8",
+            "brightRed": "#f7768e",
+            "brightWhite": "#c0caf5",
+            "brightYellow": "#e0af68",
+            "cursorColor": "#c0caf5",
+            "cyan": "#7dcfff",
+            "foreground": "#c0caf5",
+            "green": "#9ece6a",
+            "name": "Tokyo Night",
+            "purple": "#bb9af7",
+            "red": "#f7768e",
+            "selectionBackground": "#283457",
+            "white": "#a9b1d6",
+            "yellow": "#e0af68"
+        },
+        {
+            "background": "#24283b",
+            "black": "#1d202f",
+            "blue": "#7aa2f7",
+            "brightBlack": "#414868",
+            "brightBlue": "#7aa2f7",
+            "brightCyan": "#7dcfff",
+            "brightGreen": "#9ece6a",
+            "brightPurple": "#9d7cd8",
+            "brightRed": "#f7768e",
+            "brightWhite": "#c0caf5",
+            "brightYellow": "#e0af68",
+            "cursorColor": "#c0caf5",
+            "cyan": "#7dcfff",
+            "foreground": "#c0caf5",
+            "green": "#9ece6a",
+            "name": "Tokyo Night Storm",
+            "purple": "#bb9af7",
+            "red": "#f7768e",
+            "selectionBackground": "#2e3c64",
+            "white": "#a9b1d6",
+            "yellow": "#e0af68"
+        }
+    ],
+    "tabWidthMode": "equal",
+    "theme": "system",
+    "themes": [
+        {
+            "name": "Tokyo Night Day",
+            "tab": {
+                "background": "#e1e2e7FF",
+                "showCloseButton": "always",
+                "unfocusedBackground": null
+            },
+            "tabRow": {
+                "background": "#d1d3d9FF",
+                "unfocusedBackground": "#c5c8d1FF"
+            },
+            "window": {
+                "applicationTheme": "light",
+                "useMica": false
+            }
+        },
+        {
+            "name": "Tokyo Night Moon",
+            "tab": {
+                "background": "#222436FF",
+                "showCloseButton": "always",
+                "unfocusedBackground": null
+            },
+            "tabRow": {
+                "background": "#2a2d44FF",
+                "unfocusedBackground": "#222436FF"
+            },
+            "window": {
+                "applicationTheme": "dark",
+                "useMica": false
+            }
+        },
+        {
+            "name": "Tokyo Night",
+            "tab": {
+                "background": "#1a1b26FF",
+                "showCloseButton": "always",
+                "unfocusedBackground": null
+            },
+            "tabRow": {
+                "background": "#242533FF",
+                "unfocusedBackground": "#1a1b26FF"
+            },
+            "window": {
+                "applicationTheme": "dark",
+                "useMica": false
+            }
+        },
+        {
+            "name": "Tokyo Night Storm",
+            "tab": {
+                "background": "#24283bff",
+                "showCloseButton": "always",
+                "unfocusedBackground": null
+            },
+            "tabRow": {
+                "background": "#2d3249FF",
+                "unfocusedBackground": "#24283bFF"
+            },
+            "window": {
+                "applicationTheme": "dark",
+                "useMica": false
+            }
+        }
+    ]
+}

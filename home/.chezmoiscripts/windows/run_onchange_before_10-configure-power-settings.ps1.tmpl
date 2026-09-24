@@ -1,0 +1,88 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$ErrorActionPreference = 'Stop'
+
+# This script modifies machine-wide power settings.
+$isAdministrator = (
+    [Security.Principal.WindowsPrincipal]::new(
+        [Security.Principal.WindowsIdentity]::GetCurrent()
+    )
+).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+if (-not $isAdministrator) {
+    throw 'This script must be run as Administrator.'
+}
+
+function Get-ActivePowerScheme {
+    $output = powercfg.exe /getactivescheme 2>&1
+
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Could not read the active power scheme.'
+    }
+
+    $match = [regex]::Match(
+        ($output -join "`n"),
+        '\b[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}\b'
+    )
+
+    if (-not $match.Success) {
+        throw 'Could not identify the active power scheme.'
+    }
+
+    return $match.Value
+}
+
+function Get-HibernationEnabled {
+    $value = Get-ItemPropertyValue `
+        -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\Power' `
+        -Name 'HibernateEnabled' `
+        -ErrorAction SilentlyContinue
+
+    return $value -eq 1
+}
+
+function Get-ActiveStandbyTimeout {
+    $scheme = Get-ActivePowerScheme
+
+    $path = @(
+        'HKLM:\SYSTEM\CurrentControlSet\Control\Power\User\PowerSchemes'
+        $scheme
+        '238c9fa8-0aad-41ed-83f4-97be242c8f20'
+        '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
+    ) -join '\'
+
+    return Get-ItemPropertyValue `
+        -LiteralPath $path `
+        -Name 'ACSettingIndex' `
+        -ErrorAction SilentlyContinue
+}
+
+Write-Host "Configuring power settings..."
+
+# Disable hibernation.
+if (Get-HibernationEnabled) {
+    Write-Host 'Disabling hibernation...'
+
+    powercfg.exe /hibernate off
+
+    if ($LASTEXITCODE -ne 0) {
+        throw 'powercfg failed to disable hibernation.'
+    }
+}
+
+# Set AC standby timeout to 24 hours (1440 minutes).
+$standbySeconds = Get-ActiveStandbyTimeout
+
+if ($standbySeconds -ne 86400) {
+    Write-Host 'Setting AC standby timeout to 24 hours...'
+
+    powercfg.exe /change /standby-timeout-ac 1440
+
+    if ($LASTEXITCODE -ne 0) {
+        throw 'powercfg failed to set the AC standby timeout.'
+    }
+}
+
+{{ end -}}

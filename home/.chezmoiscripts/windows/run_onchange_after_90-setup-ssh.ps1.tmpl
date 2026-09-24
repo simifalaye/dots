@@ -1,0 +1,35 @@
+# vim: ft=ps1
+
+$sshEmail = "{{ .email }}"
+$sshKeyPath = "$HOME\.ssh\id_ed25519"
+$dotfilesDir = "{{ .chezmoi.sourceDir }}"
+
+Write-Host "Checking SSH key setup..." -ForegroundColor Cyan
+
+# Generate SSH Key if missing
+if (-not (Test-Path $sshKeyPath)) {
+    Write-Host "No SSH key found. Generating ed25519 key..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Path "$HOME\.ssh" -Force | Out-Null
+    ssh-keygen -t ed25519 -C $sshEmail -f $sshKeyPath -N '""'
+}
+
+# Check if gh CLI is authenticated; if not, prompt interactive login & add SSH key
+if (Get-Command gh -ErrorAction SilentlyContinue) {
+    $ghAuthStatus = gh auth status 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Authenticating with GitHub CLI to register SSH key..." -ForegroundColor Yellow
+        # Interactively authenticates and uploads the public key to your GitHub account
+        gh auth login --web -h github.com -p ssh -w
+        gh ssh-key add "${sshKeyPath}.pub" --title "Windows-$(hostname)"
+    }
+}
+
+# Swap chezmoi source repository origin from HTTPS to SSH
+if (Test-Path "$dotfilesDir\.git") {
+    $currentRemote = git -C "$dotfilesDir" remote get-url origin
+    if ($currentRemote -like "https://github.com/*") {
+        $sshRemote = $currentRemote -replace "https://github.com/", "git@github.com:"
+        Write-Host "Converting chezmoi Git origin to SSH: $sshRemote" -ForegroundColor Green
+        git -C "$dotfilesDir" remote set-url origin $sshRemote
+    }
+}
