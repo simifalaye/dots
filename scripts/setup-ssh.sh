@@ -3,10 +3,10 @@
 
 gh_path="$HOME/.local/bin/gh"
 
-ssh_email="${1}"
-ssh_key_path="${2}"
-dotfiles_dir="${3}"
-if [ -z "${ssh_email}" ] || [ -z "${ssh_key_path}" ] || [ -z "${dotfiles_dir}" ]; then
+dotfiles_dir="${1}"
+ssh_email="${2}"
+ssh_key_path="${3}"
+if [ -z "${dotfiles_dir}" ] || [ -z "${ssh_email}" ] || [ -z "${ssh_key_path}" ]; then
     echo "Error: Must provide all args: ssh_email, ssh_key_path and dotfiles_dir!" >&2
     exit 1
 fi
@@ -56,13 +56,10 @@ fi
 # Swap chezmoi source repository origin from HTTPS to SSH.
 if [ -d "$dotfiles_dir/.git" ]; then
     current_remote="$(git -C "$dotfiles_dir" remote get-url origin 2>/dev/null || true)"
-
     case "$current_remote" in
         https://github.com/*)
             ssh_remote="git@github.com:${current_remote#https://github.com/}"
-
             printf '\033[32mConverting chezmoi Git origin to SSH: %s\033[0m\n' "$ssh_remote"
-
             git -C "$dotfiles_dir" remote set-url origin "$ssh_remote"
             ;;
     esac
