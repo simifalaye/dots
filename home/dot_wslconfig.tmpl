@@ -1,0 +1,15 @@
+{{- $ram := output "powershell.exe" "-NoProfile" "-Command" "[math]::Floor((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)" | trim | atoi -}}
+{{- $cpu := output "powershell.exe" "-NoProfile" "-Command" "(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors" | trim | atoi -}}
+
+{{- $wslRam := div $ram 2 -}}
+{{- if gt $wslRam 16 }}{{ $wslRam = 16 }}{{ end -}}
+{{- if lt $wslRam 2 }}{{ $wslRam = 2 }}{{ end -}}
+
+{{- $wslCpu := div $cpu 2 -}}
+{{- if gt $wslCpu 8 }}{{ $wslCpu = 8 }}{{ end -}}
+{{- if lt $wslCpu 2 }}{{ $wslCpu = 2 }}{{ end -}}
+
+[wsl2]
+memory={{ $wslRam }}GB
+processors={{ $wslCpu }}
+localhostforwarding=true

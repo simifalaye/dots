@@ -82,6 +82,25 @@ function Install-Ubuntu {
     Write-Host 'Ubuntu installed in WSL.'
 }
 
+function Set-UbuntuWslConfig {
+    Write-Host 'Writing Ubuntu /etc/wsl.conf...'
+
+    @'
+[interop]
+enabled=true
+appendWindowsPath=false
+
+[boot]
+systemd=true
+'@ | wsl.exe --distribution Ubuntu --user root --exec tee /etc/wsl.conf | Out-Null
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to write Ubuntu /etc/wsl.conf (exit code $LASTEXITCODE)"
+    }
+
+    Write-Host 'Ubuntu /etc/wsl.conf configured.'
+}
+
 function Set-ResumeCommand {
     $command = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{0}" -PostReboot' -f $PSCommandPath
 
@@ -118,21 +137,26 @@ if ($PostReboot) {
     }
 
     Install-Ubuntu
+    Set-UbuntuWslConfig
+
+    Write-Host 'WSL setup complete.'
     return
 }
 
 # ---------------------------------------------------------------------------
-# Phase 1: Install WSL components
+# Phase 1: Install WSL components / Ubuntu
 # ---------------------------------------------------------------------------
 
 if (Test-UbuntuInstalled) {
     Write-Host 'Ubuntu is already installed in WSL.'
+    Set-UbuntuWslConfig
     return
 }
 
 if (Test-WslComponentsInstalled) {
     Write-Host 'WSL components are already installed.'
     Install-Ubuntu
+    Set-UbuntuWslConfig
     return
 }
 
@@ -147,9 +171,10 @@ try {
         return
     }
 
-    # WSL components were enabled without requiring a reboot.
     Remove-ResumeCommand
+
     Install-Ubuntu
+    Set-UbuntuWslConfig
 }
 catch {
     Remove-ResumeCommand
