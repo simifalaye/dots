@@ -49,6 +49,14 @@ $Settings = @(
         Type  = 'DWord'
         Value = 1
     }
+
+    # Enable long paths (suggested for komorebi)
+    @{
+        Path  = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+        Name  = 'LongPathsEnabled'
+        Type  = 'DWord'
+        Value = 1
+    }
 )
 
 Write-Host "Configuring machine settings..."

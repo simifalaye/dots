@@ -12,7 +12,7 @@ function Install-AppIfMissing {
         $isInstalled = winget list --id $AppId 2>$null | Select-String $AppId
 
         if (-not $isInstalled) {
-            Write-Info "Installing $AppId..."
+            Write-Host "Installing $AppId..."
             winget install --id $AppId --accept-package-agreements --accept-source-agreements
         }
     }
@@ -25,6 +25,7 @@ function Install-AppIfMissing {
     "Brave.Brave"
     "Dropbox.Dropbox"
     "equalsraf.win32yank"
+    "Flow-Launcher.Flow-Launcher"
     "Microsoft.WindowsTerminal" -}}
 
 Write-Host "Installing packages..." -ForegroundColor Cyan
