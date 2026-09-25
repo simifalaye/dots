@@ -7,4 +7,4 @@ if ! test -x "${script}"; then
     exit 1
 fi
 
-"${script}" "{{ .chezmoi.sourceDir }}" "{{ .email }}" "$HOME/.ssh/id_ed25519"
+"${script}" "{{ .chezmoi.workingTree }}" "{{ .email }}" "$HOME/.ssh/id_ed25519"

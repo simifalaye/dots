@@ -2,7 +2,7 @@
 
 $sshEmail = "{{ .email }}"
 $sshKeyPath = "$HOME\.ssh\id_ed25519"
-$dotfilesDir = "{{ .chezmoi.sourceDir }}"
+$dotfilesDir = "{{ .chezmoi.workingTree }}"
 
 Write-Host "Checking SSH key setup..." -ForegroundColor Cyan
 
