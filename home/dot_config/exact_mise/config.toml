@@ -1,0 +1,53 @@
+[tools]
+
+# General CLI tools
+bat = "latest"
+btop = "latest"
+croc = "latest"
+delta = "latest"
+direnv = "latest"
+eza = "latest"
+fd = "latest"
+fzf = "latest"
+gdu = "latest"
+git-lfs = "latest"
+jq = "latest"
+lua = "5.1"
+neovim = "latest"
+node = "latest"
+pandoc = "latest"
+pipx = "latest"
+python = "latest"
+ripgrep = "latest"
+tmux = "latest"
+unison = "latest"
+zoxide = "latest"
+
+# Language servers
+lua-language-server = "latest"
+marksman = "latest"
+"go:golang.org/x/tools/gopls" = "latest"
+"npm:basedpyright" = "latest"
+"npm:bash-language-server" = "latest"
+"npm:typescript-language-server" = "latest"
+"npm:vim-language-server" = "latest"
+"npm:vscode-json-languageserver" = "latest"
+"npm:yaml-language-server" = "latest"
+
+# Formatters
+black = "latest"
+clang-format = "latest"
+gofumpt = "latest"
+golines = "latest"
+shfmt = "latest"
+stylua = "latest"
+"npm:@fsouza/prettierd" = "latest"
+"pipx:mdformat" = "latest"
+
+# Linters
+editorconfig-checker = "latest"
+golangci-lint = "latest"
+shellcheck = "latest"
+"npm:eslint_d" = "latest"
+"pipx:cpplint" = "latest"
+"pipx:flake8" = "latest"

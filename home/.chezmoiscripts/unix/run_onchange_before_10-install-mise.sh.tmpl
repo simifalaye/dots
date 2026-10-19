@@ -1,0 +1,8 @@
+#!/bin/bash
+# vim: filetype=sh
+
+set -euo pipefail
+
+if ! command -v mise >/dev/null 2>&1; then
+  curl https://mise.run | MISE_INSTALL_PATH="${HOME}/.local/bin/mise" sh
+fi

@@ -1,0 +1,102 @@
+[user]
+  # Override using the config.local file for work PCs
+  name = Simi Falaye
+  email = "simifalaye1@gmail.com"
+
+[core]
+  editor = nvim
+  pager = less -FR
+  excludesfile = ~/.config/git/ignore.global
+
+[commit]
+  template = ~/.config/git/message
+  verbose = true
+
+[diff]
+  # Use better, descriptive initials (c, i, w) instead of a/b
+  mnemonicPrefix = true
+  # When using `--word-diff`, assume `--word-diff-regex=.`
+  wordRegex = .
+  # Color moved lines in diffs
+  colorMoved = zebra
+  # Allow indentation changes to be marked as moved lines
+  colorMovedWS = allow-indentation-change
+  # External diff and merge tool
+  tool = vimdiff
+[difftool]
+  # Do not prompt before each invocation
+  prompt = false
+[difftool "vimdiff"]
+  # Use vim/nvim
+  path = nvim
+
+[merge]
+  # Disable fast-forward merges as default merge strategy
+  # Force explicit call of `git merge --ff`
+  ff = false
+  # Enable 3-way merges
+  conflictStyle = diff3
+  # External merge tool
+  tool = vimdiff
+[mergetool]
+  # Do not prompt before each invocation
+  prompt = false
+[mergetool "vimdiff"]
+  # Use vim/nvim
+  path = nvim
+
+[grep]
+  # Show line numbers.
+  lineNumber = true
+  # Use extended regexp by default.
+  patternType = extended
+
+[format]
+  # Use a custom pretty format, defined below.
+  pretty = default
+
+[pretty]
+  # Custom default pretty format.
+  # NOTE: In order for delta to recognize the commit section, it _must_ start with `commit `.
+  default = "\
+%C(bold)commit%C(reset)  %C(yellow)%H%C(auto)%d%C(reset)%n\
+%C(bold)Author:%C(reset) %C(blue)%an <%ae>%C(reset)%n\
+%C(bold)Date:%C(reset)   %C(177)%ai (%ar)%C(reset)%n\
+%w(0,4,4)%+s%n%+b%n%+N%-(trailers)%n"\
+  # Custom oneline pretty format.
+  brief = "%C(yellow)%h %C(9)%G? %C(blue)%<(15,mtrunc)%an %C(177)%<(12,trunc)%cr %C(reset)%s%C(auto)%d%C(reset)"
+
+[log]
+  # Show only partial commit object names.
+  abbrevCommit = true
+  # Continue listing the history of a file beyond renames (works only for a single file).
+  follow = true
+
+[stash]
+  # Show the diffstat and patch of the stash entry by default.
+  showPatch = true
+
+[tag]
+  # Sort tags as version numbers in descending order whenever applicable.
+  sort = -version:refname
+
+[fetch]
+  # Before fetching, remove any remote-tracking references that no longer exist on the remote.
+  prune = true
+
+[pull]
+  # Include local merge commits in the rebase. See 'REBASING MERGES' in git-rebase(1).
+  rebase = merges
+
+[rebase]
+  # Use abbreviated command names for interactive rebases (faster to edit).
+  abbreviateCommands = true
+
+[push]
+  # When pushing, also push tags whose commits are now reachable upstream
+  followTags = true
+
+[include]
+  path = ~/.config/git/alias
+  path = ~/.config/git/config.local
+  path = ~/.config/git/delta

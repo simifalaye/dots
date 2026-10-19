@@ -1,0 +1,18 @@
+# Ignore case
+--smart-case
+
+# Follow symlinks
+--follow
+
+# Show hidden
+--hidden
+
+# Exclude git
+--glob=!.git
+
+# Slightly longer context separator to ease parsing.
+--context-separator=---
+
+# Color settings.
+--colors=path:fg:blue
+--colors=path:style:bold

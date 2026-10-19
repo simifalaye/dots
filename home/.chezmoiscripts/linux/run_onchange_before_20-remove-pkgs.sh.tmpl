@@ -1,0 +1,39 @@
+#!/bin/bash
+# vim: filetype=sh
+
+set -eufo pipefail
+
+{{ if eq .osid "linux-ubuntu" -}}
+
+{{ $packages := list
+     "bat"
+     "btop"
+     "curl"
+     "direnv"
+     "fd-find"
+     "fzf"
+     "git-delta"
+     "git-lfs"
+     "htop"
+     "jq"
+     "ripgrep"
+     "shellcheck"
+     "tmux"
+     "unison"
+     "zoxide" -}}
+{{ $snaps := list -}}
+
+{{ $sudo := "sudo " -}}
+{{ if eq .chezmoi.username "root" -}}
+{{   $sudo = "" -}}
+{{ end -}}
+
+{{ $sudo }}apt-get remove -y {{ $packages | join " " }} 2>/dev/null || true
+
+{{ if lookPath "snap" }}
+{{   range $snaps }}
+snap info {{ . }} && {{ $sudo }}snap remove {{ . }}
+{{   end }}
+{{ end }}
+
+{{ end -}}

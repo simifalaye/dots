@@ -1,0 +1,14 @@
+{{- if (not .ephemeral) -}}
+
+#!/bin/bash
+# vim: filetype=sh
+
+set -eufo pipefail
+
+zsh_path="$(which zsh)"
+if [ "${SHELL}" != "${zsh_path}" ]; then
+  info "Setting zsh as default shell"
+  chsh -s "${zsh_path}" "${USER}"
+fi
+
+{{ end -}}

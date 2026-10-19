@@ -12,8 +12,10 @@
 {{ if ne .chezmoi.os "windows" }}
 .chezmoiscripts/windows/**
 .wslconfig
+AppData/**
 Documents
 {{ else }}
+.chezmoiscripts/unix/**
 .bash_logout
 .bash_profile
 .bashenv
@@ -22,5 +24,13 @@ Documents
 .zprofile
 .zshenv
 .zshrc
-.config/shrc
+.config/bat/**
+.config/git/**
+.config/mise/**
+.config/npm/**
+.config/nvim/**
+.config/ripgrep/**
+.config/shrc/**
+.config/tmux/**
+.local/**
 {{ end }}

@@ -1,0 +1,8 @@
+#!/bin/bash
+# vim: filetype=sh
+
+set -euo pipefail
+
+if ! command -v luacheck >/dev/null 2>&1; then
+  "${HOME}/.local/bin/mise" exec -- luarocks install luacheck
+fi

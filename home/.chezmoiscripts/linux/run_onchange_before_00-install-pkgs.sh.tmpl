@@ -1,0 +1,45 @@
+#!/bin/bash
+# vim: filetype=sh
+
+set -eufo pipefail
+
+{{ if eq .osid "linux-debian" "linux-raspbian" "linux-ubuntu" -}}
+
+{{ $packages := list
+     "atool"
+     "bitwise"
+     "build-essential"
+     "calc"
+     "clangd"
+     "elinks"
+     "git"
+     "rsync"
+     "tig"
+     "trash-cli"
+     "wslu"
+     "zsh" -}}
+{{ $snaps := list -}}
+{{ $classicSnaps := list -}}
+
+{{ if not .headless -}}
+{{   $packages = mustAppend $packages "xclip" -}}
+{{ end -}}
+
+{{ $sudo := "sudo " -}}
+{{ if eq .chezmoi.username "root" -}}
+{{   $sudo = "" -}}
+{{ end -}}
+
+{{ $sudo }}apt-get update
+{{ $sudo }}apt-get install -y {{ $packages | join " " }}
+
+{{ if lookPath "snap" }}
+{{   range $snaps }}
+( snap info {{ . }} | grep -q ^installed: ) || {{ $sudo }}snap install {{ . }}
+{{   end }}
+{{   range $classicSnaps }}
+( snap info {{ . }} | grep -q ^installed: ) || {{ $sudo }}snap install --classic {{ . }}
+{{   end }}
+{{ end }}
+
+{{ end -}}

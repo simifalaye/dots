@@ -16,30 +16,19 @@
     executable = true
     path = "age/age-keygen"
 
-[".local/bin/croc"]
-    type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "schollz/croc" "croc_v*_Linux-64bit.tar.gz" | quote }}
-    executable = true
-    path = "croc"
-
-[".local/bin/eza"]
-    type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "eza-community/eza" "eza_x86_64-unknown-linux-gnu.tar.gz" | quote }}
-    executable = true
-    path = "./eza"
-
-[".local/bin/gdu"]
-    type = "archive-file"
-    url = {{ gitHubLatestReleaseAssetURL "dundee/gdu" (printf "gdu_%s_%s.tgz" .chezmoi.os .chezmoi.arch) | quote }}
-    executable = true
-    path = "gdu_linux_amd64"
-
 [".local/bin/gh"]
     type = "archive-file"
     url = {{ gitHubLatestReleaseAssetURL "cli/cli" (printf "gh_*_%s_%s.tar.gz" .chezmoi.os .chezmoi.arch) | quote }}
     executable = true
     stripComponents = 1
     path = "bin/gh"
+
+[".local/bin/win32yank.exe"]
+    type = "archive-file"
+    url = {{ gitHubLatestReleaseAssetURL "equalsraf/win32yank" "win32yank-x64.zip" | quote }}
+    executable = true
+    stripComponents = 0
+    path = "win32yank.exe"
 
 {{ end }}
 

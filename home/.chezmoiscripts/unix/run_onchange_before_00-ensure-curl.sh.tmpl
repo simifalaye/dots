@@ -1,0 +1,65 @@
+#!/bin/bash
+# vim: filetype=sh
+
+set -euo pipefail
+
+# Exit successfully if curl is already installed.
+if command -v curl >/dev/null 2>&1; then
+    exit 0
+fi
+
+echo "curl is not installed. Attempting to install it..." >&2
+
+OS="$(uname -s)"
+
+case "$OS" in
+    Darwin)
+        # macOS: install via Homebrew if available.
+        if command -v brew >/dev/null 2>&1; then
+            brew install curl
+        else
+            echo "Error: curl is missing and Homebrew is not installed." >&2
+            echo "Install Homebrew first: https://brew.sh/" >&2
+            exit 1
+        fi
+        ;;
+
+    Linux)
+        # Prefer the package manager available on the system.
+        if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y curl
+        elif command -v dnf >/dev/null 2>&1; then
+            sudo dnf install -y curl
+        elif command -v yum >/dev/null 2>&1; then
+            sudo yum install -y curl
+        elif command -v pacman >/dev/null 2>&1; then
+            sudo pacman -Sy --noconfirm curl
+        elif command -v zypper >/dev/null 2>&1; then
+            sudo zypper --non-interactive install curl
+        elif command -v apk >/dev/null 2>&1; then
+            sudo apk add curl
+        elif command -v xbps-install >/dev/null 2>&1; then
+            sudo xbps-install -Sy curl
+        elif command -v emerge >/dev/null 2>&1; then
+            sudo emerge --ask=n net-misc/curl
+        else
+            echo "Error: could not find a supported package manager." >&2
+            echo "Please install curl manually." >&2
+            exit 1
+        fi
+        ;;
+    *)
+        echo "Error: unsupported operating system: $OS" >&2
+        echo "Please install curl manually." >&2
+        exit 1
+        ;;
+esac
+
+# Verify installation.
+if ! command -v curl >/dev/null 2>&1; then
+    echo "Error: curl installation appears to have failed." >&2
+    exit 1
+fi
+
+echo "curl is installed: $(curl --version | head -n 1)" >&2
