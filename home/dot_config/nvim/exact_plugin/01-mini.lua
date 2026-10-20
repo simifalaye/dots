@@ -216,6 +216,10 @@ lazy.later(function()
 end)
 
 lazy.later(function()
+  require("mini.splitjoin").setup({})
+end)
+
+lazy.later(function()
   require("mini.surround").setup({})
 end)
 

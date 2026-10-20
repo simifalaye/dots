@@ -11,23 +11,23 @@ vim.g.loaded_user_plugin_notes = true
 
 local default_notes_dir = vim.env.NOTES_DIR or vim.fs.joinpath(vim.env.HOME, "notes")
 
----@class NotesOpts
+---@class LogNotesOpts
 ---@field disable? boolean
 ---@field dir? string
 ---@field script? string
 
----@type NotesOpts
+---@type LogNotesOpts
 local default_config = {
   disable = false,
   dir = default_notes_dir,
-  script = vim.fs.joinpath(default_notes_dir, "scripts", "notes"),
+  script = "lognotes",
 }
 
----@type NotesOpts | fun():NotesOpts
+---@type LogNotesOpts | fun():LogNotesOpts
 vim.g.notes = vim.g.notes
 
 --- Get configuration
----@return NotesOpts
+---@return LogNotesOpts
 local function get_config()
   local opts = type(vim.g.notes) == "function" and vim.g.notes() or vim.g.notes or {}
   local config = vim.tbl_deep_extend("force", default_config, opts)
@@ -56,11 +56,11 @@ local function execute_notes(args, opts)
   vim.list_extend(cmd, args)
 
   local result = vim
-      .system(cmd, {
-        env = env,
-        text = true,
-      })
-      :wait()
+    .system(cmd, {
+      env = env,
+      text = true,
+    })
+    :wait()
 
   if result.code ~= 0 then
     vim.notify(
@@ -101,17 +101,17 @@ local function execute_and_open(args, opts)
   end
 end
 
---- Notes: today
+--- LogNotes: today
 function M.today()
   execute_and_open({ "today" })
 end
 
---- Notes: yesterday
+--- LogNotes: yesterday
 function M.yesterday()
   execute_and_open({ "yesterday" })
 end
 
---- Notes: tomorrow
+--- LogNotes: tomorrow
 function M.tomorrow()
   execute_and_open({ "tomorrow" })
 end
@@ -128,28 +128,18 @@ function M.capture()
     return
   end
 
-  local alt_buf = vim.fn.bufnr("#")
-  open_file(tmpfile)
-  local bufnr = vim.api.nvim_get_current_buf()
+  -- Open a new tab and set its local working directory.
+  vim.cmd.tabnew()
+  vim.cmd.lcd(vim.fn.fnameescape(get_config().dir))
 
-  local function delete_tmpfile()
-    vim.fn.delete(tmpfile)
-  end
-  local function delete_tmpfile_buffer()
-    if not vim.api.nvim_buf_is_valid(bufnr) then
-      return
-    end
-    -- If we're still in the temp buffer, switch away before deleting it.
-    if vim.api.nvim_get_current_buf() == bufnr then
-      if alt_buf ~= -1 and vim.api.nvim_buf_is_valid(alt_buf) then
-        vim.api.nvim_set_current_buf(alt_buf)
-      end
-    end
-    vim.api.nvim_buf_delete(bufnr, { force = true })
-  end
+  open_file(tmpfile)
+
+  local bufnr = vim.api.nvim_get_current_buf()
+  local tabpage = vim.api.nvim_get_current_tabpage()
 
   local captured = false
-  local augroup = vim.api.nvim_create_augroup("NotesCapture" .. bufnr, { clear = true })
+  local augroup =
+    vim.api.nvim_create_augroup("LogNotesCapture" .. bufnr, { clear = true })
   vim.api.nvim_create_autocmd("BufWritePost", {
     group = augroup,
     buffer = bufnr,
@@ -173,8 +163,7 @@ function M.capture()
 
       local ok, err = pcall(execute_notes, { "capture", tmpfile })
 
-      delete_tmpfile()
-      delete_tmpfile_buffer()
+      vim.cmd.tabclose()
 
       if ok then
         vim.notify("Note captured", vim.log.levels.INFO)
@@ -183,97 +172,35 @@ function M.capture()
       end
     end,
   })
-
   vim.api.nvim_create_autocmd({
     "BufDelete",
     "BufWipeout",
+    "TabClosedPre",
     "VimLeavePre",
   }, {
     group = augroup,
-    buffer = bufnr,
-    once = true,
-    callback = function()
-      delete_tmpfile()
-      delete_tmpfile_buffer()
+    callback = function(ev)
+      local function cleanup()
+        pcall(vim.fn.delete, tmpfile)
+        pcall(vim.api.nvim_buf_delete, bufnr, { force = true })
+        pcall(vim.api.nvim_del_augroup, augroup)
+      end
+
+      if ev.event == "VimLeavePre" then
+        cleanup()
+        return
+      end
+
+      local t = vim.api.nvim_get_current_tabpage()
+      if t ~= tabpage then
+        return
+      end
+      vim.schedule(cleanup)
     end,
   })
 end
 
-function M.captures()
-  local output = execute_notes({ "capture" })
-  local lines = get_lines(output)
-
-  if #lines < 2 then
-    vim.notify("Error getting capture paths", vim.log.levels.ERROR)
-    return
-  end
-
-  local tmpfile = lines[1]
-  local marker_file = lines[2]
-
-  -- Open the temp file
-  open_file(tmpfile)
-
-  local bufnr = vim.api.nvim_get_current_buf()
-  local original_buf = nil
-
-  -- Store the alternate buffer if it exists
-  local alt_buf = vim.fn.bufnr("#")
-  if alt_buf ~= -1 and vim.api.nvim_buf_is_valid(alt_buf) then
-    original_buf = alt_buf
-  end
-
-  -- Create autocommand to handle save and finalization
-  local augroup =
-      vim.api.nvim_create_augroup("user.plugin.notes_capture", { clear = false })
-
-  local function cleanup_and_switch()
-    if vim.api.nvim_buf_is_valid(bufnr) then
-      -- Switch to alternate buffer or create new empty buffer
-      if original_buf and vim.api.nvim_buf_is_valid(original_buf) then
-        vim.api.nvim_set_current_buf(original_buf)
-      else
-        vim.cmd("enew")
-      end
-      vim.api.nvim_buf_delete(bufnr, { force = true })
-    end
-  end
-
-  vim.api.nvim_create_autocmd("BufWritePost", {
-    group = augroup,
-    buffer = bufnr,
-    callback = function()
-      -- Touch the marker file
-      vim.fn.system({ "touch", marker_file })
-
-      -- Run finalize-capture
-      execute_notes({ "finalize-capture", tmpfile })
-
-      vim.notify("Note captured", vim.log.levels.INFO)
-
-      -- Clean up temp files
-      vim.fn.system({ "rm", "-f", tmpfile, marker_file })
-
-      cleanup_and_switch()
-    end,
-  })
-
-  vim.api.nvim_create_autocmd({ "BufLeave", "BufWipeout" }, {
-    group = augroup,
-    buffer = bufnr,
-    once = true,
-    callback = function()
-      -- Clean up temp files if they still exist
-      vim.fn.system({ "rm", "-f", tmpfile, marker_file })
-
-      if vim.api.nvim_buf_is_valid(bufnr) then
-        cleanup_and_switch()
-      end
-    end,
-  })
-end
-
---- Notes: tags
+--- LogNotes: tags
 function M.list_tags()
   local output = execute_notes({ "list-tags" })
   local tags = get_lines(output)
@@ -285,13 +212,12 @@ function M.list_tags()
   print(table.concat(tags, "\n"))
 end
 
---- Notes: review
+--- LogNotes: review
 ---@param args string[] Optional tag arguments
 function M.review(args)
   args = args or {}
 
   if #args == 0 then
-    -- Get tags and let user select
     local output = execute_notes({ "list-tags" })
     local tags = get_lines(output)
 
@@ -308,7 +234,6 @@ function M.review(args)
       end
     end)
   else
-    -- Execute review with provided tags
     local cmd = { "review" }
     vim.list_extend(cmd, args)
 
@@ -321,35 +246,65 @@ function M.review(args)
       return
     end
 
-    vim.cmd("enew")
-    local lines = get_lines(output)
+    -- Open a new tab and set its local working directory.
+    vim.cmd.tabnew()
+    vim.cmd.lcd(vim.fn.fnameescape(get_config().dir))
 
-    -- Add modeline for markdown at the beginning
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+    -- Set up buffer
     local bufnr = vim.api.nvim_get_current_buf()
+    local tabpage = vim.api.nvim_get_current_tabpage()
+    local lines = get_lines(output)
+    local bufname = ("%s_%d"):format(args[1], vim.loop.hrtime())
+    vim.cmd.file(bufname)
+    vim.bo[bufnr].swapfile = false
+    vim.bo[bufnr].filetype = "markdown"
+    vim.bo[bufnr].modified = true
 
-    -- Set buffer as readonly and non-modifiable
-    vim.bo.modifiable = false
-    vim.bo.readonly = true
-    vim.bo.filetype = "markdown"
-    vim.bo.buftype = "nofile"
+    -- Write output and make it non-modifiable
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+    vim.bo[bufnr].modifiable = false
+    vim.bo[bufnr].readonly = true
+    vim.bo[bufnr].modified = false
 
-    -- Prevent any modifications
-    vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "InsertEnter" }, {
-      buffer = bufnr,
-      callback = function()
-        if vim.bo.modifiable then
-          vim.bo.modifiable = false
+    local bufs = { [bufnr] = true }
+    local augroup =
+      vim.api.nvim_create_augroup("user.plugin.lognotes.review-" .. args[1], {})
+    vim.api.nvim_create_autocmd("BufEnter", {
+      group = augroup,
+      callback = function(ev)
+        local t = vim.api.nvim_get_current_tabpage()
+        if t ~= tabpage then
+          return
         end
+        bufs[ev.buf] = true
       end,
     })
+    vim.api.nvim_create_autocmd({ "TabClosedPre", "VimLeavePre" }, {
+      group = augroup,
+      callback = function(ev)
+        local function cleanup()
+          for b, _ in pairs(bufs) do
+            pcall(vim.api.nvim_buf_delete, b, { force = true })
+          end
+          pcall(vim.api.nvim_del_augroup, augroup)
+        end
 
-    -- Make q close the buffer
-    vim.keymap.set("n", "q", ":bdelete<CR>", { buffer = bufnr, noremap = true })
+        if ev.event == "VimLeavePre" then
+          cleanup()
+          return
+        end
+
+        local t = vim.api.nvim_get_current_tabpage()
+        if t ~= tabpage then
+          return
+        end
+        vim.schedule(cleanup)
+      end,
+    })
   end
 end
 
---- Notes: rename-tag
+--- LogNotes: rename-tag
 function M.rename_tag()
   local output = execute_notes({ "list-tags" })
   local tags = get_lines(output)
@@ -383,16 +338,20 @@ end
 
 lazy.later(function()
   -- Commands
-  vim.api.nvim_create_user_command("NotesToday", M.today, { desc = "Today" })
-  vim.api.nvim_create_user_command("NotesYesterday", M.yesterday, { desc = "Yesterday" })
-  vim.api.nvim_create_user_command("NotesTomorrow", M.tomorrow, { desc = "Tomorrow" })
-  vim.api.nvim_create_user_command("NotesCapture", M.capture, { desc = "Capture" })
-  vim.api.nvim_create_user_command("NotesTags", M.list_tags, { desc = "List tags" })
-  vim.api.nvim_create_user_command("NotesReview", function(opts)
+  vim.api.nvim_create_user_command("LogNotesToday", M.today, { desc = "Today" })
+  vim.api.nvim_create_user_command(
+    "LogNotesYesterday",
+    M.yesterday,
+    { desc = "Yesterday" }
+  )
+  vim.api.nvim_create_user_command("LogNotesTomorrow", M.tomorrow, { desc = "Tomorrow" })
+  vim.api.nvim_create_user_command("LogNotesCapture", M.capture, { desc = "Capture" })
+  vim.api.nvim_create_user_command("LogNotesTags", M.list_tags, { desc = "List tags" })
+  vim.api.nvim_create_user_command("LogNotesReview", function(opts)
     M.review(opts.fargs)
   end, { desc = "Review", nargs = "*" })
   vim.api.nvim_create_user_command(
-    "NotesRenameTag",
+    "LogNotesRenameTag",
     M.rename_tag,
     { desc = "Rename tag" }
   )

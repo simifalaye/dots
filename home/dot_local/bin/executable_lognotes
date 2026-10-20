@@ -1,0 +1,558 @@
+#!/bin/sh
+# POSIX-compliant note-taking script
+# Supports integration with extensible text editors like Neovim
+
+set -e
+
+# Configuration
+NOTES_DIR="${NOTES_DIR:=${HOME}/notes}"
+EDITOR="${EDITOR:-vi}"
+IN_EDITOR="${IN_EDITOR:-0}"
+
+# Global State
+command -v rg >/dev/null 2>&1 && HAS_RG=1 || HAS_RG=0
+command -v fzf >/dev/null 2>&1 && HAS_FZF=1 || HAS_FZF=0
+command -v fd >/dev/null 2>&1 && HAS_FD=1 || HAS_FD=0
+
+# Create notes directory if it doesn't exist
+mkdir -p "$NOTES_DIR"
+
+# Helper functions
+
+# Print error message to stderr
+error() {
+    printf "Error: %s\n" "$*" >&2
+}
+
+# Print warning message to stderr
+warn() {
+    printf "Warning: %s\n" "$*" >&2
+}
+
+# Print info message to stdout
+info() {
+    printf "%s\n" "$*"
+}
+
+# Remove tmpfile
+cleanup_tmpfile() {
+    rm -f "$tmpfile"
+}
+
+# Get date in YYYY-MM-DD format
+get_date() {
+    date -u +%Y-%m-%d
+}
+
+# Get offset date (positive or negative days from today)
+get_offset_date() {
+    offset=$1
+    date -u -v"${offset}d" +%Y-%m-%d 2>/dev/null || \
+        date -u -d "@$(($(date +%s) + offset * 86400))" +%Y-%m-%d
+}
+
+# Get note file path for a given date
+get_note_path() {
+    date_arg=$1
+    echo "$NOTES_DIR/${date_arg}.md"
+}
+
+# Make a tmpfile in the notes dir
+get_tmpfile() {
+    mktemp --suffix=.md --tmpdir="$NOTES_DIR"
+}
+
+# Create a note with default content
+create_note() {
+    path="${1}"
+    title="${2}"
+    echo "# $title" > "$path"
+    echo "" >> "$path"
+}
+
+# Process captured content if file is not empty into today's path
+process_capture() {
+    tmpfile=$1
+    if [ ! -s "$tmpfile" ]; then
+        return
+    fi
+
+    title_line=$(head -n 1 "$tmpfile")
+    if [ -z "$title_line" ]; then
+      error "A title must be provided on the first line"
+      return 1
+    fi
+
+    rest=$(tail -n +2 "$tmpfile")
+    today="$(get_date)"
+    today_path=$(get_note_path "$today")
+    [ -f "$today_path" ] && title="" || title="# $today"
+
+    # Append to today's note
+    {
+        if [ -n "$title" ]; then
+            echo "$title"
+        fi
+        echo ""
+        echo "## $title_line"
+        if [ -n "$rest" ]; then
+            second_line=$(printf '%s\n' "$rest" | sed -n '1p')
+            if [ -n "$second_line" ]; then
+                echo ""
+            fi
+            echo "$rest"
+        fi
+    } >> "$today_path"
+    info "Captured note added to $(get_date)"
+}
+
+# Markdown-aware grep.
+# Ignores fenced code blocks and inline code spans.
+#
+# Usage:
+#   markdown_grep PATTERN file...
+#   markdown_grep -l PATTERN file...
+#
+# Output:
+#   file:line:text
+# or
+#   file
+markdown_grep() {
+    list_only=0
+
+    if [ "$1" = "-l" ]; then
+        list_only=1
+        shift
+    fi
+
+    pat=$1
+    shift
+
+    awk \
+        -v pat="$pat" \
+        -v list="$list_only" '
+    BEGIN {
+        in_fence = 0
+    }
+
+    /^```/ {
+        in_fence = !in_fence
+        next
+    }
+
+    in_fence {
+        next
+    }
+
+    {
+        line = $0
+
+        # Remove inline code spans.
+        gsub(/`[^`]*`/, "", line)
+
+        if (line ~ pat) {
+            if (list) {
+                print FILENAME
+                nextfile
+            }
+
+            printf "%s:%d:%s\n", FILENAME, FNR, $0
+        }
+    }
+    ' "$@"
+}
+
+# Subcommand: find
+cmd_find() {
+    if [ "$IN_EDITOR" = 1 ]; then
+        error "notes find is not available inside the editor"
+        return 1
+    fi
+
+    if [ "$HAS_FZF" != 1 ]; then
+        error "notes find requires fzf"
+        return 1
+    fi
+
+    if [ "$HAS_FD" = 1 ]; then
+        files=$(
+            fd --type f --extension md . "$NOTES_DIR" |
+            sed "s#^$NOTES_DIR/##"
+        )
+    elif [ "$HAS_RG" = 1 ]; then
+        files=$(
+            rg --files "$NOTES_DIR" |
+            grep '\.md$' |
+            sed "s#^$NOTES_DIR/##"
+        )
+    else
+        files=$(
+            find "$NOTES_DIR" -type f -name '*.md' |
+            sed "s#^$NOTES_DIR/##"
+        )
+    fi
+
+    file=$(
+        printf '%s\n' "$files" |
+        fzf --prompt="Find note: "
+    )
+
+    [ -z "$file" ] && return 0
+
+    "$EDITOR" "$NOTES_DIR/$file"
+}
+
+
+# Subcommand: search
+cmd_search() {
+    if [ "$IN_EDITOR" = 1 ]; then
+        error "notes search is not available inside the editor"
+        return 1
+    fi
+
+    if [ "$HAS_RG" != 1 ]; then
+        error "notes search requires ripgrep"
+        return 1
+    fi
+
+    if [ "$HAS_FZF" != 1 ]; then
+        error "notes search requires fzf"
+        return 1
+    fi
+
+    selected=$(
+        rg --vimgrep --color=never "" "$NOTES_DIR" |
+        fzf --ansi --disabled \
+            --bind "change:reload:rg --vimgrep --color=never {q} '$NOTES_DIR' || true" \
+            --prompt="Search notes: "
+    )
+
+    [ -z "$selected" ] && return 0
+
+    file=${selected%%:*}
+    rest=${selected#*:}
+    line=${rest%%:*}
+
+    "$EDITOR" "+$line" "$file"
+}
+
+# Subcommand: today
+cmd_today() {
+    date_val=$(get_date)
+    note_path=$(get_note_path "$date_val")
+
+    if [ ! -f "$note_path" ]; then
+        create_note "${note_path}" "${date_val}"
+    fi
+    if [ "$IN_EDITOR" = "1" ]; then
+        info "$note_path"
+    else
+        "$EDITOR" "$note_path"
+    fi
+}
+
+# Subcommand: yesterday
+cmd_yesterday() {
+    date_val=$(get_offset_date "-1")
+    note_path=$(get_note_path "$date_val")
+
+    if [ ! -f "$note_path" ]; then
+        error "No note found for yesterday ($date_val)"
+        return 1
+    fi
+    if [ "$IN_EDITOR" = "1" ]; then
+        info "$note_path"
+    else
+        "$EDITOR" "$note_path"
+    fi
+}
+
+# Subcommand: tomorrow
+cmd_tomorrow() {
+    date_val=$(get_offset_date "+1")
+    note_path=$(get_note_path "$date_val")
+
+    if [ ! -f "$note_path" ]; then
+        create_note "${note_path}" "${date_val}"
+    fi
+    if [ "$IN_EDITOR" = "1" ]; then
+        info "$note_path"
+    else
+        "$EDITOR" "$note_path"
+    fi
+}
+
+# Subcommand: capture
+cmd_capture() {
+    tmpfile="${1}"
+
+    if [ -n "${tmpfile}" ] && [ -f "${tmpfile}" ]; then
+        process_capture "$tmpfile"
+    else
+        if [ "$IN_EDITOR" = "1" ]; then
+            error "Must pass in a valid file to load when IN_EDITOR"
+            return 1
+        else
+            # Create tmpfile and open editor for capture
+            tmpfile=$(get_tmpfile)
+            trap 'cleanup_tmpfile' EXIT
+            "$EDITOR" "$tmpfile"
+            process_capture "$tmpfile"
+        fi
+    fi
+}
+
+# Subcommand: list-tags
+cmd_list_tags() {
+    if [ "$HAS_RG" = 1 ]; then
+        files=$(
+            rg \
+                --no-config \
+                --files \
+                --max-depth 1 \
+                --glob '*.md' \
+                --glob '*.markdown' \
+                "$NOTES_DIR"
+        )
+    else
+        files=$(
+            find "$NOTES_DIR" -maxdepth 1 -type f \
+                \( -name '*.md' -o -name '*.markdown' \)
+        )
+    fi
+
+    [ -z "$files" ] && return
+
+    printf '%s\n' "$files" |
+    while IFS= read -r file; do
+        markdown_grep '#[[:alnum:]_][[:alnum:]_-]*' "$file"
+    done |
+    sed 's/^[^:]*:[0-9]*://' |
+    grep -E -o '(^|[^[:alnum:]_#])#[[:alnum:]_][[:alnum:]_-]*' |
+    sed 's/^[^#]*#//' |
+    sort -u
+}
+
+# Subcommand: review
+cmd_review() {
+    if [ $# -eq 0 ]; then
+        error "Usage: notes review <tag> [<tag> ...]"
+        return 1
+    fi
+
+    found=0
+    for tag in "$@"; do
+        tag=$(printf '%s' "$tag" | sed 's/[][(){}.^$*+?|\\]/\\&/g')
+        pat="(^|[^[:alnum:]_#])#${tag}([^[:alnum:]_-]|$)"
+
+        if [ "$HAS_RG" = 1 ]; then
+            files=$(
+                rg \
+                    --no-config \
+                    --files-with-matches \
+                    --max-depth 1 \
+                    --glob '*.md' \
+                    --glob '*.markdown' \
+                    "$pat" \
+                    "$NOTES_DIR"
+            )
+        else
+            files=$(
+                find "$NOTES_DIR" -maxdepth 1 -type f \
+                    \( -name '*.md' -o -name '*.markdown' \) \
+                    -exec grep -l -E "$pat" {} + 2>/dev/null
+            )
+        fi
+
+        [ -z "$files" ] && continue
+
+        matches=$(
+            printf '%s\n' "$files" |
+            while IFS= read -r file; do
+                markdown_grep "$pat" "$file"
+            done
+        )
+
+        [ -z "$matches" ] && continue
+
+        found=1
+
+        printf "<!-- vim: set ft=markdown: -->\n\n"
+        printf "# Review: %s\n" "$tag"
+
+        printf '%s\n' "$matches" |
+        while IFS=: read -r file line rest; do
+            awk -v file="$file" -v line="$line" '
+            {
+                lines[NR] = $0
+            }
+            END {
+                start = 1
+                end = NR
+
+                # Find preceding level-2 heading
+                for (i = line; i >= 1; i--) {
+                    if (lines[i] ~ /^## /) {
+                        start = i
+                        break
+                    }
+                }
+
+                # Find next level-2 heading
+                for (i = start + 1; i <= NR; i++) {
+                    if (lines[i] ~ /^## /) {
+                        end = i - 1
+                        break
+                    }
+                }
+
+                header = lines[start]
+                sub(/^## /, "", header)
+
+                filename = file
+                sub(/^.*\//, "", filename)
+                sub(/\.md$/, "", filename)
+
+                printf "\n## [[%s#%s]]", filename, header
+
+                for (i = start + 1; i <= end; i++)
+                    print lines[i]
+            }' "$file"
+        done
+    done
+
+    if [ "$found" -eq 0 ]; then
+        printf "No entries found for tags: %s\n" "$*"
+    fi
+}
+
+# Subcommand: rename-tag
+cmd_rename_tag() {
+    if [ $# -ne 2 ]; then
+        error "Usage: notes rename-tag <old> <new>"
+        return 1
+    fi
+    old_tag="$1"
+    new_tag="$2"
+
+    old_pat=$(printf '%s' "$old_tag" | sed 's/[][(){}.^$*+?|\\]/\\&/g')
+    new_rep=$(printf '%s' "$new_tag" | sed 's/[&/\]/\\&/g')
+
+    pat="(^|[^[:alnum:]_#])#${old_pat}([^[:alnum:]_-]|$)"
+
+    # Fast candidate search.
+    if [ "$HAS_RG" = 1 ]; then
+        candidates=$(
+            rg \
+                --no-config \
+                --files-with-matches \
+                --max-depth 1 \
+                --glob '*.md' \
+                --glob '*.markdown' \
+                "$pat" \
+                "$NOTES_DIR" 2>/dev/null
+        )
+    else
+        candidates=$(
+            find "$NOTES_DIR" -maxdepth 1 -type f \
+                \( -name '*.md' -o -name '*.markdown' \) \
+                -exec grep -l -E "$pat" {} + 2>/dev/null
+        )
+    fi
+
+    [ -z "$candidates" ] && {
+        info "No tags found for $old_tag"
+        return 0
+    }
+
+    # Markdown-aware verification.
+    files=$(
+        printf '%s\n' "$candidates" |
+        while IFS= read -r file; do
+            markdown_grep -l "$pat" "$file"
+        done
+    )
+
+    [ -z "$files" ] && {
+        info "No tags found for $old_tag"
+        return 0
+    }
+
+    printf '%s\n' "$files" |
+    while IFS= read -r file; do
+        sed -E -i.bak \
+            "s/${pat}/\1#${new_rep}\2/g" \
+            "$file" &&
+        rm -f "${file}.bak"
+    done
+
+    info "Renamed tag from $old_tag to $new_tag"
+}
+
+# Main dispatch
+main() {
+    cmd="${1:-today}"
+    if [ $# -gt 0 ]; then
+        shift
+    fi
+
+    case "$cmd" in
+        find)
+            cmd_find "$@"
+            ;;
+        search)
+            cmd_search "$@"
+            ;;
+        today)
+            cmd_today "$@"
+            ;;
+        yesterday)
+            cmd_yesterday "$@"
+            ;;
+        tomorrow)
+            cmd_tomorrow "$@"
+            ;;
+        capture)
+            cmd_capture "$@"
+            ;;
+        list-tags)
+            cmd_list_tags "$@"
+            ;;
+        review)
+            cmd_review "$@"
+            ;;
+        rename-tag)
+            cmd_rename_tag "$@"
+            ;;
+        *)
+            cat <<EOF
+            Usage: notes [command] [options]
+
+            Commands:
+            find               Find note interactively
+            search             Search for text in notes interactively
+            today              Open today's note (or return path if IN_EDITOR=1)
+            yesterday          Open yesterday's note (or return path if IN_EDITOR=1)
+            tomorrow           Open tomorrow's note (or return path if IN_EDITOR=1)
+            capture            Capture a new note entry for today
+            review <tag> ...   Review entries with specific tag(s)
+            list-tags          List all unique tags used in notes
+            rename-tag <o> <n> Rename a tag across all notes
+
+            Environment Variables:
+            NOTES_DIR          Directory to store notes (default: ~/notes)
+            EDITOR             Editor to use (default: vi)
+            IN_EDITOR          Set to 1 when called from within an editor
+
+            Examples:
+            notes today                         # Open today's note
+            IN_EDITOR=1 notes today             # Return path to today's note
+            notes review cpp                    # Review entries taged with work or ideas
+            notes review work ideas             # Review entries li;nked with work or ideas
+EOF
+return 1
+;;
+esac
+}
+
+main "$@"

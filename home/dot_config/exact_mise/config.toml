@@ -22,10 +22,10 @@ ripgrep = "latest"
 tmux = "latest"
 unison = "latest"
 zoxide = "latest"
+"ubi:Feel-ix-343/markdown-oxide" = "latest"
 
 # Language servers
 lua-language-server = "latest"
-marksman = "latest"
 "go:golang.org/x/tools/gopls" = "latest"
 "npm:basedpyright" = "latest"
 "npm:bash-language-server" = "latest"

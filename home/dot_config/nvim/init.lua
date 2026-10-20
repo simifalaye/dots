@@ -451,26 +451,23 @@ map("n", "Y", function()
   vim.b.cursor_pre_yank = vim.api.nvim_win_get_cursor(0)
   return "y$"
 end, { desc = "Yank eol, keep cursor", expr = true })
-map("n", "yY", '"+yal', { desc = "Yank entire file to system clipboard" })
-map(
-  "n",
-  '"%y',
-  "<cmd>let @+=fnamemodify(@%, ':.')<cr>",
-  { desc = "Copy current relative filename to system clipboard" }
-)
 map("n", "p", "p`[v`]=", { desc = "Paste & Format" })
 
 -- System clipboard integration
 map({ "n", "x" }, "gy", '"+y', { desc = "Copy to system clipboard" })
+map("n", "gyY", "<cmd>%y+<CR>", { desc = "Yank entire file to system clipboard" })
+map(
+  "n",
+  'gy%',
+  "<cmd>let @+=fnamemodify(@%, ':.')<cr>",
+  { desc = "Copy current relative filename to system clipboard" }
+)
 map("n", "gp", '"+p', { desc = "Paste from system clipboard" })
 map("x", "gp", '"+P', { desc = "Paste from system clipboard" })
 
 -- Format buffer
-map("n", "g=", function()
-  local view = vim.fn.winsaveview()
-  vim.cmd("normal! gggqG")
-  vim.fn.winrestview(view)
-end, { desc = "Format entire buffer" })
+map("n", "gq<CR>", "mzgggqG`z", { desc = "Format entire buffer" })
+map("n", "gq?", "<cmd>set formatprg? formatexpr?<CR>", { desc = "Shor format settings" })
 
 -- Search mark and center
 map("n", "/", "ms/", { desc = "Search forward with mark" })
@@ -654,7 +651,7 @@ vim.lsp.enable({
   "gopls",
   "jsonls",
   "lua_ls",
-  "marksman",
+  "markdown_oxide",
   "ts_ls",
   "vimls",
   "yamlls",
