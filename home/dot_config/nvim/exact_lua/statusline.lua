@@ -39,53 +39,105 @@ end
 -- Components
 --
 
+-- Note: termcodes \19 and \22 are ^S and ^V
+---- stylua: ignore
+local mode_settings = {
+  ["n"] = { name = "NORMAL", hl = "Normal" },
+  ["no"] = { name = "OP-PENDING", hl = "Pending" },
+  ["nov"] = { name = "OP-PENDING", hl = "Pending" },
+  ["noV"] = { name = "OP-PENDING", hl = "Pending" },
+  ["no\22"] = { name = "OP-PENDING", hl = "Pending" },
+
+  ["niI"] = { name = "NORMAL", hl = "Normal" },
+  ["niR"] = { name = "NORMAL", hl = "Normal" },
+  ["niV"] = { name = "NORMAL", hl = "Normal" },
+  ["nt"] = { name = "NORMAL", hl = "Normal" },
+  ["ntT"] = { name = "NORMAL", hl = "Normal" },
+
+  ["v"] = { name = "VISUAL", hl = "Visual" },
+  ["vs"] = { name = "VISUAL", hl = "Visual" },
+  ["V"] = { name = "V-LINE", hl = "Visual" },
+  ["Vs"] = { name = "V-LINE", hl = "Visual" },
+  ["\22"] = { name = "V-BLOCK", hl = "Visual" },
+
+  ["\22s"] = { name = "V-BLOCK", hl = "Visual" },
+  ["s"] = { name = "SELECT", hl = "Insert" },
+  ["S"] = { name = "S-LINE", hl = "Normal" },
+  ["\19"] = { name = "S-BLOCK", hl = "Normal" },
+  ["i"] = { name = "INSERT", hl = "Insert" },
+  ["ic"] = { name = "INSERT", hl = "Insert" },
+  ["ix"] = { name = "INSERT", hl = "Insert" },
+  ["R"] = { name = "REPLACE", hl = "Replace" },
+  ["Rc"] = { name = "REPLACE", hl = "Replace" },
+  ["Rx"] = { name = "REPLACE", hl = "Replace" },
+  ["Rv"] = { name = "V-REPLACE", hl = "Replace" },
+  ["Rvc"] = { name = "V-REPLACE", hl = "Replace" },
+  ["Rvx"] = { name = "V-REPLACE", hl = "Replace" },
+  ["c"] = { name = "COMMAND", hl = "Command" },
+  ["cv"] = { name = "EX", hl = "Command" },
+  ["ce"] = { name = "EX", hl = "Command" },
+  ["r"] = { name = "REPLACE", hl = "Normal" },
+  ["rm"] = { name = "MORE", hl = "Normal" },
+  ["r?"] = { name = "CONFIRM", hl = "Normal" },
+  ["!"] = { name = "SHELL", hl = "Normal" },
+  ["t"] = { name = "TERMINAL", hl = "Command" },
+}
+
+local function get_mode()
+  return mode_settings[vim.fn.mode()] or { name = "??", hl = "Normal" }
+end
+
 local function comp_mode()
-  -- Note: termcodes \19 and \22 are ^S and ^V
-  ---- stylua: ignore
-  local mode_settings = {
-    ["n"] = { name = "NORMAL", hl = "Normal" },
-    ["no"] = { name = "OP-PENDING", hl = "Pending" },
-    ["nov"] = { name = "OP-PENDING", hl = "Pending" },
-    ["noV"] = { name = "OP-PENDING", hl = "Pending" },
-    ["no\22"] = { name = "OP-PENDING", hl = "Pending" },
-
-    ["niI"] = { name = "NORMAL", hl = "Normal" },
-    ["niR"] = { name = "NORMAL", hl = "Normal" },
-    ["niV"] = { name = "NORMAL", hl = "Normal" },
-    ["nt"] = { name = "NORMAL", hl = "Normal" },
-    ["ntT"] = { name = "NORMAL", hl = "Normal" },
-
-    ["v"] = { name = "VISUAL", hl = "Visual" },
-    ["vs"] = { name = "VISUAL", hl = "Visual" },
-    ["V"] = { name = "V-LINE", hl = "Visual" },
-    ["Vs"] = { name = "V-LINE", hl = "Visual" },
-    ["\22"] = { name = "V-BLOCK", hl = "Visual" },
-
-    ["\22s"] = { name = "V-BLOCK", hl = "Visual" },
-    ["s"] = { name = "SELECT", hl = "Insert" },
-    ["S"] = { name = "S-LINE", hl = "Normal" },
-    ["\19"] = { name = "S-BLOCK", hl = "Normal" },
-    ["i"] = { name = "INSERT", hl = "Insert" },
-    ["ic"] = { name = "INSERT", hl = "Insert" },
-    ["ix"] = { name = "INSERT", hl = "Insert" },
-    ["R"] = { name = "REPLACE", hl = "Replace" },
-    ["Rc"] = { name = "REPLACE", hl = "Replace" },
-    ["Rx"] = { name = "REPLACE", hl = "Replace" },
-    ["Rv"] = { name = "V-REPLACE", hl = "Replace" },
-    ["Rvc"] = { name = "V-REPLACE", hl = "Replace" },
-    ["Rvx"] = { name = "V-REPLACE", hl = "Replace" },
-    ["c"] = { name = "COMMAND", hl = "Command" },
-    ["cv"] = { name = "EX", hl = "Command" },
-    ["ce"] = { name = "EX", hl = "Command" },
-    ["r"] = { name = "REPLACE", hl = "Normal" },
-    ["rm"] = { name = "MORE", hl = "Normal" },
-    ["r?"] = { name = "CONFIRM", hl = "Normal" },
-    ["!"] = { name = "SHELL", hl = "Normal" },
-    ["t"] = { name = "TERMINAL", hl = "Command" },
-  }
-
-  local mode = mode_settings[vim.fn.mode()] or { name = "??", hl = "Normal" }
+  local mode = get_mode()
   return hl.make_hl_str(" " .. mode.name .. " ", "StatusLineMode" .. mode.hl)
+end
+
+local function comp_search(buf)
+  local lines = vim.api.nvim_buf_line_count(buf)
+  if lines > 50000 then
+    return ""
+  end
+
+  local query = vim.fn.getreg("/")
+  if query == "" then
+    return ""
+  end
+
+  if query:find("@") then
+    return ""
+  end
+
+  local search_count = vim.fn.searchcount({ recompute = 1, maxcount = -1 })
+  local active = false
+  if vim.v.hlsearch and vim.v.hlsearch == 1 and search_count.total > 0 then
+    active = true
+  end
+  if not active then
+    return ""
+  end
+
+  query = query:gsub([[^\V]], "")
+  query = query:gsub([[\<]], ""):gsub([[\>]], "")
+
+  local mode = get_mode()
+
+  return hl.make_hl_str(
+    (" %s/%s "):format(search_count.current, search_count.total),
+    "StatusLineMode" .. mode.hl
+  )
+end
+
+local function comp_macro()
+  if vim.fn.reg_recording() == "" then
+    return ""
+  end
+
+  local mode = get_mode()
+
+  return hl.make_hl_str(
+    (" %s%s "):format("  ", vim.fn.reg_recording()),
+    "StatusLineMode" .. mode.hl
+  )
 end
 
 local function comp_git_info(buf)
@@ -108,10 +160,7 @@ local function comp_git_info(buf)
   if branch == "HEAD" then
     branch = git.execute(
       buf,
-      vim.list_extend(
-        vim.deepcopy(use_cur_repo_args),
-        { "rev-parse", "--short", "HEAD" }
-      )
+      vim.list_extend(vim.deepcopy(use_cur_repo_args), { "rev-parse", "--short", "HEAD" })
     )
   end
 
@@ -120,14 +169,23 @@ local function comp_git_info(buf)
   end
 
   local ahead, behind = 0, 0
-  local ahead_behind = git.execute(buf,
-    vim.list_extend(vim.deepcopy(use_cur_repo_args), { "rev-list", "--left-right", "--count", "HEAD...@{u}" }))
+  local ahead_behind = git.execute(
+    buf,
+    vim.list_extend(
+      vim.deepcopy(use_cur_repo_args),
+      { "rev-list", "--left-right", "--count", "HEAD...@{u}" }
+    )
+  )
   if ahead_behind then
     local a, b = ahead_behind:match("(%d+)%s+(%d+)")
     ahead, behind = tonumber(a) or 0, tonumber(b) or 0
   end
 
-  return ("%s%s%s"):format(icons.Font.Ft.Git, branch, (ahead > 0 or behind > 0) and "↻" or " ")
+  return ("%s%s%s"):format(
+    icons.Font.Ft.Git,
+    branch,
+    (ahead > 0 or behind > 0) and "↻" or " "
+  )
 end
 
 local function comp_diag(buf)
@@ -137,7 +195,7 @@ local function comp_diag(buf)
 
   for _, item in ipairs({
     { sev.ERROR, icons.Font.Diag.Error },
-    { sev.WARN,  icons.Font.Diag.Warn },
+    { sev.WARN, icons.Font.Diag.Warn },
   }) do
     local count = counts[item[1]] or 0
     parts[#parts + 1] = item[2] .. " " .. count
@@ -179,7 +237,7 @@ end
 
 local function comp_fileenconding(buf)
   return option(buf, "fileencoding") ~= "" and option(buf, "fileencoding"):upper()
-      or option(nil, "encoding"):upper()
+    or option(nil, "encoding"):upper()
 end
 
 local function comp_fileformat(buf)
@@ -206,6 +264,19 @@ end
 -- Init
 --
 
+local initialized = false
+
+local function init()
+  if initialized then
+    return
+  end
+
+  vim.opt.shortmess = vim.opt.shortmess + "S" -- don't show search count [n/m]
+  vim.opt.shortmess = vim.opt.shortmess + "q" -- don't show "recording @<key>"
+
+  initialized = true
+end
+
 -- Compile and apply our custom highlights
 set_hl_groups()
 
@@ -218,6 +289,8 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 
 return {
   render = function()
+    init()
+
     local active_win = vim.api.nvim_get_current_win()
     local status_win = tonumber(vim.g.statusline_winid) or active_win
     local status_active = active_win == status_win
@@ -247,6 +320,17 @@ return {
       })
     end
 
+    local comp_mode_search_macro = function()
+      local search = comp_search(buf)
+      local macro = comp_macro()
+      if not is_empty(search) then
+        return search
+      elseif not is_empty(macro) then
+        return macro
+      end
+      return comp_mode()
+    end
+
     return table.concat({
       "%#StatusLine#",
       "  ",
@@ -254,7 +338,7 @@ return {
       "  ",
       comp_diag(buf),
       "  ",
-      comp_mode(),
+      comp_mode_search_macro(),
       " ",
       comp_server(),
       "%=", -- Left/right separator
