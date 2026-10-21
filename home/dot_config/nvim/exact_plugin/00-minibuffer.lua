@@ -25,6 +25,17 @@ lazy.now(function()
     })
   end
 
+  local files_rg_opts = {
+    "rg",
+    "--no-config",
+    "--files",
+    "--hidden",
+    "--color",
+    "never",
+    "-g",
+    "!.git",
+  }
+
   local minibuffer = require("minibuffer")
 
   vim.ui.select = require("minibuffer.builtin.ui_select")
@@ -58,6 +69,7 @@ lazy.now(function()
   )
   vim.keymap.set("n", "<leader>c", function()
     require("minibuffer.builtin.files")({
+      rg_opts = files_rg_opts,
       cwd = vim.fs.joinpath(
         vim.fs.joinpath(vim.env.HOME, ".local", "share", "chezmoi"),
         ".dotfiles"
@@ -70,12 +82,11 @@ lazy.now(function()
   vim.keymap.set("n", "<leader>D", function()
     require("minibuffer.builtin.diagnostics")({ scope = "workspace" })
   end, { desc = "Find diagnostics (workspace)" })
-  vim.keymap.set(
-    "n",
-    "<leader>f",
-    require("minibuffer.builtin.files"),
-    { desc = "Find file" }
-  )
+  vim.keymap.set("n", "<leader>f", function()
+    require("minibuffer.builtin.files")({
+      rg_opts = files_rg_opts,
+    })
+  end, { desc = "Find file" })
   vim.keymap.set(
     "n",
     "<leader>F",
