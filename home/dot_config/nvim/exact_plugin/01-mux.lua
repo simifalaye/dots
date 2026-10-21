@@ -3,6 +3,8 @@ local asyncrpc = require("utils.asyncrpc")
 
 local socket_prefix = "nvim."
 local socket_name_match = "nvim%.(.+)"
+local restart_message_file =
+  vim.fs.joinpath(vim.fn.stdpath("state"), "mux_restart_message")
 
 --
 -- Config
@@ -13,6 +15,8 @@ local cfg = {
   session_dir = vim.fs.normalize(vim.fs.joinpath(vim.fn.stdpath("run"), "..", "mux")),
   -- command used to spawn new nvim instances (table of args)
   spawn_cmd = { vim.v.progpath },
+  -- automatically disconnect unmanaged servers when switching away
+  detach_unmanaged = true,
 }
 
 --
@@ -74,11 +78,8 @@ function MuxSession:ready()
   if not self.server or vim.uv.fs_stat(self.server.socket) == nil then
     return false
   end
-  local ok, rpc_chan = pcall(vim.fn.sockconnect, "pipe", self.server.socket, {
-    rpc = true,
-  })
-  if ok and rpc_chan and rpc_chan > 0 then
-    vim.fn.chanclose(rpc_chan)
+  local err = asyncrpc.send(self.server.socket, [[]])
+  if not err then
     self.server.ready = true
     return true
   else
@@ -259,13 +260,16 @@ function MuxSession:detach()
       return vim.bo[b.bufnr].buftype == ""
     end, vim.fn.getbufinfo({ bufmodified = 1 }))
   else
-    local lua_code = [[
-    return vim.tbl_filter(
-      function(b) return vim.bo[b.bufnr].buftype == "" end,
-      vim.fn.getbufinfo({ bufmodified = 1 })
+    local res, err = asyncrpc.requestwait(
+      self.server.socket,
+      [[
+        return vim.tbl_filter(
+          function(b) return vim.bo[b.bufnr].buftype == "" end,
+          vim.fn.getbufinfo({ bufmodified = 1 })
+        )
+      ]],
+      800
     )
-    ]]
-    local res, err = asyncrpc.requestwait(self.server.socket, lua_code, 800)
     if err then
       notify_warn(
         "Could not query session '%s' for unsaved buffers: %s",
@@ -339,6 +343,7 @@ local function sync_session_cache()
   for name, session in pairs(session_cache) do
     if session.server then
       if not active_sockets[session.server.socket] then
+        asyncrpc.close_channel(session_cache[name].server.socket)
         session_cache[name] = nil
       end
     end
@@ -396,6 +401,18 @@ end
 
 local M = {}
 
+local function should_detach()
+  if not cfg.detach_unmanaged then
+    return false
+  end
+
+  local current = M.current()
+  if current then
+    return not current.server.managed
+  end
+  return false
+end
+
 --- Return current mux session
 ---@return mux.MuxSession|nil
 function M.current()
@@ -405,16 +422,6 @@ function M.current()
     return nil
   end
   return session_cache[name] or nil
-end
-
---- Check if current mux session is managed by plugin
----@return boolean
-function M.is_managed()
-  local current = M.current()
-  if current then
-    return current.server.managed
-  end
-  return false
 end
 
 --- Create a new mux session in a specified directory
@@ -458,7 +465,7 @@ function M.add(dir, name)
   end
 
   session_cache[name] = MuxSession.new(name, dir)
-  session_cache[name]:connect(not M.is_managed(), session_cache)
+  session_cache[name]:connect(should_detach(), session_cache)
 end
 
 --- Switch to a mux session
@@ -497,7 +504,7 @@ function M.switch(name)
   end
 
   -- Switch
-  local ok, err = pcall(MuxSession.connect, session, not M.is_managed(), session_cache)
+  local ok, err = pcall(MuxSession.connect, session, should_detach(), session_cache)
   if not ok then
     notify_error(err)
   end
@@ -512,8 +519,7 @@ function M.switch_last()
   end
 
   -- Switch
-  local ok, err =
-    pcall(MuxSession.connect, last_session, not M.is_managed(), session_cache)
+  local ok, err = pcall(MuxSession.connect, last_session, should_detach(), session_cache)
   if not ok then
     notify_error(err)
     return
@@ -576,34 +582,29 @@ end
 
 --- Restart all sessions
 function M.restart()
-  local sessions = list_sessions()
-  if #sessions == 0 then
-    notify_info("No sessions available")
-    return
-  end
-
+  local sessions = list_sessions(true)
   local sent = 0
+  local success = 0
   local failed = 0
   for _, session in ipairs(sessions) do
-    if session.server and session.server.socket ~= vim.v.servername then
-      local chan = vim.fn.sockconnect("pipe", session.server.socket, { rpc = true })
-      if chan > 0 then
-        vim.rpcnotify(chan, "nvim_command", "restart")
-        vim.defer_fn(function()
-          vim.fn.chanclose(chan)
-        end, 100)
-        sent = sent + 1
-      else
+    if session.server then
+      sent = sent + 1
+      local err =
+        asyncrpc.send(session.server.socket, [[vim.g.mux_restart_scheduled = true]])
+      if err then
         failed = failed + 1
+      else
+        success = success + 1
       end
     end
   end
 
-  notify_info(
-    "Restarting %d other server(s)%s; restarting current instance",
-    sent,
-    failed > 0 and (", " .. failed .. " connection(s) failed") or ""
-  )
+  vim.fn.writefile({
+    ("Scheduled restart for %d/%d server(s); restarted current instance"):format(
+      success,
+      sent
+    ),
+  }, restart_message_file)
 
   vim.defer_fn(function()
     vim.cmd.restart()
@@ -612,34 +613,12 @@ end
 
 --- Quit all sessions
 function M.quit()
-  local sessions = list_sessions()
-  if #sessions == 0 then
-    notify_info("No sessions available")
-    return
-  end
-
-  local sent = 0
-  local failed = 0
+  local sessions = list_sessions(true)
   for _, session in ipairs(sessions) do
-    if session.server and session.server.socket ~= vim.v.servername then
-      local chan = vim.fn.sockconnect("pipe", session.server.socket, { rpc = true })
-      if chan > 0 then
-        vim.rpcnotify(chan, "nvim_command", "qall")
-        vim.defer_fn(function()
-          vim.fn.chanclose(chan)
-        end, 100)
-        sent = sent + 1
-      else
-        failed = failed + 1
-      end
+    if session.server then
+      asyncrpc.send(session.server.socket, [[vim.cmd.qall()]])
     end
   end
-
-  notify_info(
-    "Quiting %d other server(s)%s; quiting current instance",
-    sent,
-    failed > 0 and (", " .. failed .. " connection(s) failed") or ""
-  )
 
   vim.defer_fn(function()
     vim.cmd.qall()
@@ -654,6 +633,15 @@ _G.Mux = M
 
 local lazy = require("utils.lazy")
 lazy.now(function()
+  -- Handle restart message
+  if vim.fn.filereadable(restart_message_file) == 1 then
+    local lines = vim.fn.readfile(restart_message_file)
+    vim.fn.delete(restart_message_file)
+    vim.schedule(function()
+      notify_info(table.concat(lines, "\n"))
+    end)
+  end
+
   -- On first startup, open directory buffer
   if vim.env.MUX_SERVER_START and vim.env.MUX_SERVER_START == "1" then
     vim.cmd.edit(".")
@@ -664,6 +652,7 @@ lazy.now(function()
   -- Store current server data
   vim.g.mux_start_time = vim.g.mux_start_time or vim.uv.hrtime()
   vim.g.mux_last_accessed = vim.g.mux_last_accessed or 0
+  vim.g.mux_restart_scheduled = vim.g.mux_restart_scheduled or false
 
   -- ensure session dir exists
   mkdir(cfg.session_dir)
@@ -678,9 +667,19 @@ lazy.now(function()
     desc = "Update session data on UIEnter",
     group = augroup,
     callback = function()
-      vim.g.mux_last_accessed = vim.uv.hrtime()
-      sync_session_cache()
-      sync_session_servers()
+      if vim.g.mux_restart_scheduled then
+        vim.g.mux_restart_scheduled = false
+        vim.schedule(function()
+          vim.fn.writefile({ "Restarted current instance" }, restart_message_file)
+          vim.defer_fn(function()
+            vim.cmd.restart()
+          end, 100)
+        end)
+      else
+        vim.g.mux_last_accessed = vim.uv.hrtime()
+        sync_session_cache()
+        sync_session_servers()
+      end
     end,
   })
 

@@ -5,11 +5,11 @@ lazy.now(function()
     { src = "https://github.com/Bekaboo/dropbar.nvim" },
   })
 
-  vim.api.nvim_set_hl(0, "DropBarFileCurrent", { bold = true, link = "Title" })
+  vim.api.nvim_set_hl(0, "DropBarFileCurrent", { bold = true, link = "Identifier" })
   vim.api.nvim_set_hl(
     0,
     "DropBarFileCurrentModified",
-    { bold = true, link = "WarningMsg" }
+    { bold = true, link = "CurSearch" }
   )
 
   local dropbar = require("dropbar")

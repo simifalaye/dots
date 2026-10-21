@@ -35,15 +35,50 @@
 local default_timeout = 1000
 local next_ident = 0
 
+---@type table<string, integer>
+local channels = {}
+
 ---@type table<integer, asyncrpc.RequestObj>
 local pending = {}
 
+--- Get the next ident
+---@return string
 local function alloc_ident()
   next_ident = next_ident + 1
   return tostring(next_ident)
 end
 
--- Helper to safely stop+close a uv timer (ignore errors)
+--- Get cached channel or open new connection
+---@param socket string
+---@return integer|nil
+local function get_channel(socket)
+  local chan = channels[socket]
+
+  if chan then
+    local info = vim.api.nvim_get_chan_info(chan)
+    if next(info) ~= nil then
+      return chan
+    end
+    channels[socket] = nil
+  end
+
+  local new_chan = vim.fn.sockconnect("pipe", socket, { rpc = true })
+  if new_chan == 0 or new_chan == -1 then
+    return
+  end
+
+  channels[socket] = new_chan
+  return new_chan
+end
+
+--- Close a cached channel if it exists
+---@param socket string
+local function close_channel(socket)
+  pcall(vim.fn.chanclose, socket)
+end
+
+--- Helper to safely stop+close a uv timer (ignore errors)
+---@param t uv.uv_timer_t
 local function stop_and_close_timer(t)
   if not t then
     return
@@ -91,8 +126,8 @@ _G.server_handle_request = function(ident, lua_code, origin_socket)
   end
 
   if origin_socket and origin_socket ~= "" then
-    local chan = vim.fn.sockconnect("pipe", origin_socket, { rpc = true })
-    if chan == 0 or chan == -1 then
+    local chan = get_channel(origin_socket)
+    if not chan then
       return
     end
     vim.rpcnotify(
@@ -105,9 +140,6 @@ _G.server_handle_request = function(ident, lua_code, origin_socket)
       ]],
       { ident, resp }
     )
-    vim.defer_fn(function()
-      vim.fn.chanclose(chan)
-    end, 100)
   end
 end
 
@@ -146,14 +178,11 @@ local M = {}
 ---@return asyncrpc.SendErr|nil
 function M.send(socket, lua_code)
   -- connect and notify
-  local chan = vim.fn.sockconnect("pipe", socket, { rpc = true })
-  if chan == 0 or chan == -1 then
+  local chan = get_channel(socket)
+  if not chan then
     return "connect_failed"
   end
   vim.rpcnotify(chan, "nvim_exec_lua", lua_code, {})
-  vim.defer_fn(function()
-    vim.fn.chanclose(chan)
-  end, 100)
   return nil
 end
 
@@ -205,8 +234,8 @@ function M.request(socket, lua_code, callback, timeout_ms)
   )
 
   -- connect and notify
-  local chan = vim.fn.sockconnect("pipe", socket, { rpc = true })
-  if chan == 0 or chan == -1 then
+  local chan = get_channel(socket)
+  if not chan then
     -- immediate failure to connect
     local entry = pending[ident]
     pending[ident] = nil
@@ -243,9 +272,6 @@ function M.request(socket, lua_code, callback, timeout_ms)
       ]],
     { ident, lua_code, origin }
   )
-  vim.defer_fn(function()
-    vim.fn.chanclose(chan)
-  end, 100)
 
   return ident, nil
 end
@@ -299,6 +325,12 @@ function M.cancel(ident)
       stop_and_close_timer(entry.timer)
     end
   end
+end
+
+--- Close a cached channel if it exists
+---@param socket string
+function M.close_channel(socket)
+  close_channel(socket)
 end
 
 return M

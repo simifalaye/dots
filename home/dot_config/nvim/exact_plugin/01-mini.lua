@@ -173,7 +173,7 @@ lazy.later(function()
   require("mini.operators").setup({
     -- Evaluate text and replace with output
     evaluate = {
-      prefix = "g:",
+      prefix = "g=",
     },
     -- Exchange text regions
     exchange = {

@@ -158,3 +158,21 @@ map("n", "<M-{>", function()
   local target = vim.v.count > 0 and (vim.v.count - 1) or "-1"
   vim.cmd("tabmove " .. target)
 end, { desc = "Move tab to position" })
+
+-- Close/quit
+map(
+  "n",
+  "ZZ",
+  "v:count ? ':<c-u>xa!<cr>' : '@_ZZ'",
+  { desc = "Write and quit window (all with count)", expr = true }
+)
+map(
+  "n",
+  "ZQ",
+  "v:count ? ':<c-u>qa!<cr>' : '@_ZQ'",
+  { desc = "Quit (all with count)", expr = true }
+)
+map("n", "ZT", "<cmd>tabclose<cr>", {
+  silent = true,
+  desc = "Close current tab",
+})

@@ -133,7 +133,6 @@ lazy.now_if_args(function()
       end
     else
       " Create new :shell.
-
       let origbuf = bufnr('%')
       if !a:here
         exe ((a:cnt == 0) ? 'tab split' : a:cnt.'split')
@@ -153,7 +152,7 @@ lazy.now_if_args(function()
     let g:term_shell.prevwid = curwinid
     setlocal nobuflisted
   endfunc
-  nnoremap <C-t> <cmd>call <SID>auto_term(v:count, v:false)<CR>
-  nnoremap '<C-t> <cmd>call <SID>auto_term(v:count, v:true)<CR>
+  nnoremap <M-;> <cmd>call <SID>auto_term(v:count, v:false)<CR>
+  nnoremap '<M-;> <cmd>call <SID>auto_term(v:count, v:true)<CR>
   ]])
 end)

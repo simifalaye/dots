@@ -52,8 +52,6 @@ vim.opt.shada = "'100,<50,s10,:1000,/100,@100,h"
 vim.opt.exrc = true
 vim.opt.swapfile = false -- TODO: Evaluate
 vim.opt.confirm = true
-vim.opt.sessionoptions =
-  "blank,buffers,curdir,folds,help,tabpages,winsize,terminal,localoptions"
 
 -- UI
 vim.opt.breakindent = true
@@ -81,7 +79,6 @@ vim.opt.scrolloff = 2
 vim.opt.sidescrolloff = 16
 vim.opt.completetimeout = 100
 vim.opt.cmdheight = 0
--- vim.opt.statusline = "%{%v:lua.require'statusline'.render()%}"
 vim.opt.statusline = "%!v:lua.require'statusline'.render()"
 
 -- Editing
@@ -403,6 +400,20 @@ vim.api.nvim_create_user_command("PackClean", function()
   vim.pack.del(remove_list)
 end, { desc = "Clean inactive plugins", nargs = 0 })
 
+vim.api.nvim_create_user_command("R", function(opts)
+  if not opts.bang then
+    vim.cmd.wincmd("n")
+  end
+
+  local cmd = opts.args:gsub("'", "''"):gsub('"', '\\"')
+  vim.cmd("put=execute('" .. cmd .. "')")
+end, {
+  desc = "Execute command and put result into a buffer (or current with '!')",
+  nargs = "+",
+  bang = true,
+  complete = "command",
+})
+
 --
 -- Keymaps
 --
@@ -458,7 +469,7 @@ map({ "n", "x" }, "gy", '"+y', { desc = "Copy to system clipboard" })
 map("n", "gyY", "<cmd>%y+<CR>", { desc = "Yank entire file to system clipboard" })
 map(
   "n",
-  'gy%',
+  "gy%",
   "<cmd>let @+=fnamemodify(@%, ':.')<cr>",
   { desc = "Copy current relative filename to system clipboard" }
 )
@@ -469,17 +480,14 @@ map("x", "gp", '"+P', { desc = "Paste from system clipboard" })
 map("n", "gq<CR>", "mzgggqG`z", { desc = "Format entire buffer" })
 map("n", "gq?", "<cmd>set formatprg? formatexpr?<CR>", { desc = "Shor format settings" })
 
+-- Run lua
+map("n", "g:", ":lua=", { desc = "Run lua code" })
+
 -- Search mark and center
 map("n", "/", "ms/", { desc = "Search forward with mark" })
 map("n", "?", "ms?", { desc = "Search backwards with mark" })
 map("n", "n", "nzzzv", { desc = "Search next and center cursor" })
 map("n", "N", "Nzzzv", { desc = "Search prev and center cursor" })
-
--- Alt buffer
-map("n", "<C-b>", "<C-^>", {
-  silent = true,
-  desc = "Switch to alternate buffer",
-})
 
 -- Change directory
 map(
@@ -492,7 +500,7 @@ map("n", "cdd", function()
   local root = vim.fs.root(0, ".git")
   if root then
     vim.cmd.lcd({ args = { root } })
-    vim.cmd.verbose("pwd")
+    vim.cmd.pwd()
   end
 end, { desc = "Change local directory to Git root" })
 map(
@@ -579,6 +587,9 @@ map("n", "<C-l>", function()
   vim.cmd("normal! <C-l>")
 end, { silent = true, desc = "Redraw screen, clear search highlights and multicursors" })
 
+-- Terminal mode
+map("t", "<M-;>", "<C-\\><C-n>", { desc = "Leave terminal mode" })
+
 -- Close buffers
 map("n", "ZB", "<cmd>bp | bd #<CR>", { desc = "Delete buffer" })
 map("n", "ZK", ":bufdo bd!<CR>", { desc = "Killall buffers" })
@@ -591,6 +602,28 @@ map("n", "ZO", function()
   end
   vim.notify("Deleted other buffers")
 end, { desc = "Delete other buffers" })
+
+-- g?: Web search
+vim.keymap.set("n", "g??", function()
+  vim.ui.open(("https://google.com/search?q=%s"):format(vim.fn.expand("<cword>")))
+end)
+vim.keymap.set("x", "g??", function()
+  vim.ui.open(
+    ("https://google.com/search?q=%s"):format(
+      vim.trim(
+        table.concat(
+          vim.fn.getregion(
+            vim.fn.getpos("."),
+            vim.fn.getpos("v"),
+            { type = vim.fn.mode() }
+          ),
+          " "
+        )
+      )
+    )
+  )
+  vim.api.nvim_input("<esc>")
+end)
 
 -- Pickers
 map("n", "<leader>b", function()
