@@ -4,14 +4,15 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$AddonId,
 
-    [string]$PolicyFile = "$env:ProgramFiles\LibreWolf\distribution\policies.json"
+    [string]$PolicyFile = "$env:ProgramFiles\LibreWolf\distribution\policies.json",
+    [string]$JqPath = "$env:USERPROFILE\AppData\Local\Microsoft\WinGet\Packages\jqlang.jq_Microsoft.Winget.Source_8wekyb3d8bbwe\jq.exe"
 )
 
 $ErrorActionPreference = 'Stop'
 
 # Require jq.
-if (-not (Get-Command jq -ErrorAction SilentlyContinue)) {
-    throw "jq is required but was not found in PATH."
+if (-not (Test-Path -LiteralPath $JqPath)) {
+    throw "jq is required but was not found at $JqPath."
 }
 
 if (-not (Test-Path -LiteralPath (Split-Path -Parent $PolicyFile))) {
@@ -26,13 +27,13 @@ $json = if (Test-Path -LiteralPath $PolicyFile) {
 }
 
 # Validate existing JSON.
-$json | jq -e 'type == \"object\"' | Out-Null
+$json | & $JqPath -e 'type == \"object\"' | Out-Null
 if ($LASTEXITCODE -ne 0) {
     throw "Invalid policy JSON: $PolicyFile"
 }
 
 # Update the extension policy while preserving everything else.
-$updated = $json | jq --arg id $AddonId `
+$updated = $json | & $JqPath --arg id $AddonId `
                       --arg url "https://addons.mozilla.org/firefox/downloads/latest/$AddonId/latest.xpi" '
     .policies = (.policies // {}) |
     .policies.ExtensionSettings = (.policies.ExtensionSettings // {}) |
@@ -47,7 +48,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Verify the required settings.
-$updated | jq -e --arg id $AddonId '
+$updated | & $JqPath -e --arg id $AddonId '
     .policies.ExtensionSettings[$id] == {
         installation_mode: \"normal_installed\",
         install_url: (\"https://addons.mozilla.org/firefox/downloads/latest/\" + $id + \"/latest.xpi\"),
@@ -59,8 +60,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Skip the write if the JSON is already equivalent.
-$before = ($json | jq -cS '.')
-$after  = ($updated | jq -cS '.')
+$before = ($json | & $JqPath -cS '.')
+$after  = ($updated | & $JqPath -cS '.')
 
 if ($LASTEXITCODE -ne 0) {
     throw "Failed to compare policy JSON."
