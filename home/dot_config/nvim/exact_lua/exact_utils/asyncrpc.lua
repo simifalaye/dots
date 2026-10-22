@@ -28,14 +28,28 @@
 ---@field cb asyncrpc.RequestCb
 ---@field timer uv.uv_timer_t
 
+---@class asyncrpc.Channel
+---@field value integer
+---@field last_used integer
+
 --
 -- Locals
 --
 
+---@type integer
 local default_timeout = 1000
+---@type integer
 local next_ident = 0
 
----@type table<string, integer>
+---@type uv.uv_timer_t?
+local cleanup_timer
+---@type integer
+---@type integer
+local channel_cleanup_interval_ms = 5 * 60 * 1000 -- 5 minutes
+---@type integer
+local channel_idle_timeout_ms = 10 * 60 * 1000 -- 10 minutes
+
+---@type table<string, asyncrpc.Channel>
 local channels = {}
 
 ---@type table<integer, asyncrpc.RequestObj>
@@ -48,15 +62,57 @@ local function alloc_ident()
   return tostring(next_ident)
 end
 
+--- Close a cached channel if it exists
+---@param socket string
+local function close_channel(socket)
+  -- Remove from cache first so future lookups cannot retrieve it.
+  channels[socket] = nil
+  -- Then close the channel
+  pcall(vim.fn.chanclose, socket)
+
+  if next(channels) == nil then
+    if cleanup_timer then
+      cleanup_timer:stop()
+      cleanup_timer:close()
+      cleanup_timer = nil
+    end
+  end
+end
+
+--- Start (if not already) the channel cleanup interval
+local function start_channel_cleanup()
+  if cleanup_timer then
+    return
+  end
+
+  cleanup_timer = vim.uv.new_timer()
+  if not cleanup_timer then
+    return
+  end
+
+  cleanup_timer:start(channel_cleanup_interval_ms, channel_cleanup_interval_ms, function()
+    vim.schedule(function()
+      local now = vim.uv.hrtime()
+      local timeout = channel_idle_timeout_ms * 1e6
+      for socket, channel in pairs(channels) do
+        if (now - channel.last_used) > timeout then
+          close_channel(socket)
+        end
+      end
+    end)
+  end)
+end
+
 --- Get cached channel or open new connection
 ---@param socket string
----@return integer|nil
+---@return asyncrpc.Channel|nil
 local function get_channel(socket)
   local chan = channels[socket]
 
   if chan then
-    local info = vim.api.nvim_get_chan_info(chan)
+    local info = vim.api.nvim_get_chan_info(chan.value)
     if next(info) ~= nil then
+      chan.last_used = vim.uv.hrtime()
       return chan
     end
     channels[socket] = nil
@@ -64,17 +120,12 @@ local function get_channel(socket)
 
   local new_chan = vim.fn.sockconnect("pipe", socket, { rpc = true })
   if new_chan == 0 or new_chan == -1 then
-    return
+    return nil
   end
+  start_channel_cleanup()
 
-  channels[socket] = new_chan
-  return new_chan
-end
-
---- Close a cached channel if it exists
----@param socket string
-local function close_channel(socket)
-  pcall(vim.fn.chanclose, socket)
+  channels[socket] = { value = new_chan, last_used = vim.uv.hrtime() }
+  return channels[socket]
 end
 
 --- Helper to safely stop+close a uv timer (ignore errors)
@@ -131,7 +182,7 @@ _G.server_handle_request = function(ident, lua_code, origin_socket)
       return
     end
     vim.rpcnotify(
-      chan,
+      chan.value,
       "nvim_exec_lua",
       [[
         if _G and type(_G.server_handle_response) == "function" then
@@ -182,7 +233,7 @@ function M.send(socket, lua_code)
   if not chan then
     return "connect_failed"
   end
-  vim.rpcnotify(chan, "nvim_exec_lua", lua_code, {})
+  vim.rpcnotify(chan.value, "nvim_exec_lua", lua_code, {})
   return nil
 end
 
@@ -255,7 +306,7 @@ function M.request(socket, lua_code, callback, timeout_ms)
 
   -- run _G.server_handle_request(...) on the remote instance.
   vim.rpcnotify(
-    chan,
+    chan.value,
     "nvim_exec_lua",
     [[
         -- args: ident, lua_code, origin_socket

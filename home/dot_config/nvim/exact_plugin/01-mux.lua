@@ -343,7 +343,7 @@ local function sync_session_cache()
   for name, session in pairs(session_cache) do
     if session.server then
       if not active_sockets[session.server.socket] then
-        asyncrpc.close_channel(session_cache[name].server.socket)
+        asyncrpc.close_channel(session.server.socket)
         session_cache[name] = nil
       end
     end

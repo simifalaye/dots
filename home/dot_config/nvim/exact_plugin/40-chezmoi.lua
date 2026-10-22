@@ -1,5 +1,9 @@
 local lazy = require("utils.lazy")
 
+local cfg = {
+  ignore_runnables = false,
+}
+
 lazy.now_if_args(function()
   local runnable_prefix = "run_"
 
@@ -28,9 +32,53 @@ lazy.now_if_args(function()
     pattern = { vim.env.HOME .. "/.local/share/chezmoi/*" },
     callback = function(args)
       local filename = vim.fn.fnamemodify(args.file, ":t")
-      if filename:sub(1, #runnable_prefix) ~= runnable_prefix then
+      if not cfg.ignore_runnables or filename:sub(1, #runnable_prefix) ~= runnable_prefix then
         vim.system({ "chezmoi", "apply", "--source-path", args.file }, { detach = true })
       end
     end,
   })
+
+  local whereexe = "/mnt/c/Windows/System32/where.exe"
+  if vim.fn.executable("wslupath") == 1 and vim.fn.executable(whereexe) == 1 then
+    vim.system(
+      { "sh", "-c", 'wslupath "$(' .. whereexe .. ' chezmoi)"' },
+      { text = true },
+      function(res1)
+        if res1.code ~= 0 then
+          return
+        end
+        local chezmoi_path = vim.trim(res1.stdout)
+        if chezmoi_path == "" then
+          return
+        end
+
+        vim.system({ "wslupath", "-H" }, { text = true }, function(res2)
+          if res2.code ~= 0 then
+            return
+          end
+          local userhome_path = vim.trim(res2.stdout)
+          if userhome_path == "" then
+            return
+          end
+
+          vim.schedule(function()
+            vim.api.nvim_create_autocmd("BufWritePost", {
+              desc = "Apply windows chezmoi files on save",
+              group = grp,
+              pattern = { userhome_path .. "/.local/share/chezmoi/*" },
+              callback = function(args)
+                local filename = vim.fn.fnamemodify(args.file, ":t")
+                if not cfg.ignore_runnables or filename:sub(1, #runnable_prefix) ~= runnable_prefix then
+                  vim.system(
+                    { chezmoi_path, "apply", "--source-path", args.file },
+                    { detach = true }
+                  )
+                end
+              end,
+            })
+          end)
+        end)
+      end
+    )
+  end
 end)

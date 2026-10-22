@@ -464,6 +464,20 @@ map("n", "Y", function()
 end, { desc = "Yank eol, keep cursor", expr = true })
 map("n", "p", "p`[v`]=", { desc = "Paste & Format" })
 
+-- Execute macro over visual
+vim.cmd([[
+function! ExecuteMacroOverVisualRange()
+echo "@".getcmdline()
+execute ":'<,'>normal @".nr2char(getchar())
+endfunction
+]])
+map(
+  "x",
+  "@",
+  ":<C-u>call ExecuteMacroOverVisualRange()<CR>",
+  { desc = "Exec macro over range", silent = false }
+)
+
 -- System clipboard integration
 map({ "n", "x" }, "gy", '"+y', { desc = "Copy to system clipboard" })
 map("n", "gyY", "<cmd>%y+<CR>", { desc = "Yank entire file to system clipboard" })
@@ -482,6 +496,11 @@ map("n", "gq?", "<cmd>set formatprg? formatexpr?<CR>", { desc = "Shor format set
 
 -- Run lua
 map("n", "g:", ":lua=", { desc = "Run lua code" })
+
+-- Visual mode map improvements
+map("v", "$", "g_", { desc = "Last non-blank char" })
+map("v", "<", "<gv", { desc = "Shift and re-select" })
+map("v", ">", ">gv", { desc = "Shift and re-select" })
 
 -- Search mark and center
 map("n", "/", "ms/", { desc = "Search forward with mark" })
@@ -662,6 +681,19 @@ map("n", "<leader>p", function()
     vim.fn.wildtrigger()
   end)
 end, { desc = "Find plugin file" })
+
+-- Text objects
+if 0 ~= 1 then
+  map("x", "il", [[<Esc>^vg_]], { desc = "inner line" })
+  map("o", "il", [[<cmd>normal! ^vg_<CR>]], { desc = "inner line" })
+  map("x", "al", [[gg0oG$]], { desc = "all lines" })
+  map(
+    "o",
+    "al",
+    [[<cmd>execute "normal! m`"<Bar>keepjumps normal! ggVG<CR>]],
+    { desc = "all lines" }
+  )
+end
 
 --
 -- Lsp & Diagnostics
