@@ -1,0 +1,21 @@
+{
+	"name": "Vimium C",
+	"@time": "2026-10-22, 2:17:49 p.m.",
+	"time": 1792700269613,
+	"environment": {
+		"extension": "2.12.3",
+		"platform": "win",
+		"firefox": 158
+	},
+	"grabBackFocus": true,
+	"keyLayout": 2,
+	"keyMappings": [
+		"#!no-check",
+		"map J nextTab",
+		"map K previousTab",
+		""
+	],
+	"newTabUrl": "https://www.google.com",
+	"preferBrowserSearch": false,
+	"vimSync": true
+}

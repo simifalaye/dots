@@ -3,13 +3,4 @@
 $script = Join-Path '{{ .chezmoi.workingTree }}' 'scripts\windows\setup-librewolf-extension.ps1'
 
 # Install extensions
-& $script -AddonId 'tridactyl.vim@cmcaine.co.uk'
-
-# Install tridactyl native messages
-$td_exe    = Join-Path $env:USERPROFILE '.tridactyl\native_main.exe'
-$td_script = Join-Path $env:TEMP 'tridactyl-windows-installer.ps1'
-if (-not (Test-Path -LiteralPath $td_exe)) {
-  Invoke-WebRequest 'https://raw.githubusercontent.com/tridactyl/native_messenger/master/installers/windows.ps1' -OutFile $td_script
-    & $td_script
-    Remove-Item -LiteralPath $td_script -Force -ErrorAction SilentlyContinue
-}
+& $script -AddonId 'vimium-c@gdh1995.cn'
