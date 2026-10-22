@@ -1,7 +1,7 @@
 local lazy = require("utils.lazy")
 
 local cfg = {
-  ignore_runnables = false,
+  ignore_runnables = true,
 }
 
 lazy.now_if_args(function()
