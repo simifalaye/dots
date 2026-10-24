@@ -79,6 +79,7 @@ vim.opt.scrolloff = 2
 vim.opt.sidescrolloff = 16
 vim.opt.completetimeout = 100
 vim.opt.cmdheight = 0
+vim.opt.laststatus = 3
 vim.opt.statusline = "%!v:lua.require'statusline'.render()"
 
 -- Editing
@@ -559,9 +560,8 @@ map(
   "n",
   "g>",
   [[<cmd>set nomore<bar>echo repeat("\n",&cmdheight)<bar>40messages<bar>set more<CR>]],
-  { desc = "Show Message History" }
+  { desc = "Show Messages" }
 )
-map("n", "g<", [[<cmd>messages clear<CR>]], { desc = "Clear Message History" })
 
 -- Search
 map(

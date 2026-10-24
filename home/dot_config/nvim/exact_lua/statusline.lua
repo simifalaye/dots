@@ -84,7 +84,12 @@ local mode_settings = {
 }
 
 local function get_mode()
-  return mode_settings[vim.fn.mode()] or { name = "??", hl = "Normal" }
+  local mode = vim.fn.mode()
+  local mb_ok, mb = pcall(require, "minibuffer")
+  if mb_ok and mb.is_active and mb.is_active() then
+    mode = "n"
+  end
+  return mode_settings[mode] or { name = "??", hl = "Normal" }
 end
 
 local function comp_mode()
@@ -151,7 +156,7 @@ local function comp_git_info(buf)
   -- as the abbrev ref which is useless, then fallback to actual commit id
   -- with `--short`
   local branch = git.execute(
-    0,
+    buf,
     vim.list_extend(
       vim.deepcopy(use_cur_repo_args),
       { "rev-parse", "--abbrev-ref", "HEAD" }
@@ -292,12 +297,16 @@ return {
     init()
 
     local active_win = vim.api.nvim_get_current_win()
-    local status_win = tonumber(vim.g.statusline_winid) or active_win
-    local status_active = active_win == status_win
-
     local mb_ok, mb = pcall(require, "minibuffer")
     if mb_ok and mb.is_active and mb.get_active_window and mb.is_active() then
-      status_active = status_win == mb.get_active_window()
+      active_win = mb.get_active_window()
+    end
+    local status_win = active_win
+    local status_active = true
+
+    if vim.o.laststatus ~= 3 then
+      status_win = tonumber(vim.g.statusline_winid) or active_win
+      status_active = active_win == status_win
     end
 
     local buf = vim.api.nvim_win_get_buf(status_win)
