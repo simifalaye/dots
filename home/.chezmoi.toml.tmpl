@@ -39,6 +39,7 @@
     headless = {{ $headless }}
     hostname = {{ $hostname | quote }}
     osid = {{ $osID | quote }}
+    is_wsl = {{ and (eq .chezmoi.os "linux") (contains "microsoft" (.chezmoi.kernel.osrelease | lower)) }}
 
 {{- if lookPath "podman" }}
 [docker]

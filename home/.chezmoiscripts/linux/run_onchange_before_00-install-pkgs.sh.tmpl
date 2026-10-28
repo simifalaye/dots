@@ -16,10 +16,13 @@ set -eufo pipefail
      "rsync"
      "tig"
      "trash-cli"
-     "wslu"
      "zsh" -}}
 {{ $snaps := list -}}
 {{ $classicSnaps := list -}}
+
+{{ if .is_wsl -}}
+{{   $packages = mustAppend $packages "wslu" -}}
+{{ end -}}
 
 {{ if not .headless -}}
 {{   $packages = mustAppend $packages "xclip" -}}
