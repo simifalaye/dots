@@ -136,7 +136,9 @@ function MuxSession:spawn(on_ready)
       self:fetch()
 
       if on_ready then
-        on_ready(self)
+        vim.schedule(function()
+          on_ready(self)
+        end)
       end
       return
     end

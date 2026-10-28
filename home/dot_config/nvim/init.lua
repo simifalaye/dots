@@ -52,6 +52,10 @@ vim.opt.shada = "'100,<50,s10,:1000,/100,@100,h"
 vim.opt.exrc = true
 vim.opt.swapfile = false -- TODO: Evaluate
 vim.opt.confirm = true
+vim.opt.timeout = true
+vim.opt.timeoutlen = 500
+vim.opt.ttimeout = true
+vim.opt.ttimeoutlen = 10
 
 -- UI
 vim.opt.breakindent = true
@@ -694,6 +698,47 @@ if 0 ~= 1 then
     { desc = "all lines" }
   )
 end
+
+-- Alt buffer
+vim.keymap.set("n", "<C-6>", "<C-^>", { desc = "Switch to alternate buffer" })
+
+-- Windows and tabs
+local function toggle_window_zoom()
+  if vim.v.count > 0 then
+    vim.cmd("normal! " .. vim.v.count .. "|")
+  end
+
+  if vim.fn.winnr("$") == 1 then
+    return
+  end
+
+  local restore_cmd = vim.fn.winrestcmd()
+
+  vim.cmd.wincmd("|")
+  vim.cmd.wincmd("_")
+
+  if vim.t.zoom_restore ~= nil then
+    vim.cmd(vim.t.zoom_restore)
+    vim.t.zoom_restore = nil
+  elseif vim.fn.winrestcmd() ~= restore_cmd then
+    vim.t.zoom_restore = restore_cmd
+  end
+end
+map("n", "<C-w><C-z>", toggle_window_zoom, { desc = "Toggle window zoom" })
+map("n", "<C-w>z", toggle_window_zoom, { desc = "Toggle window zoom" })
+map(
+  "n",
+  "ZZ",
+  "v:count ? ':<c-u>xa!<cr>' : '@_ZZ'",
+  { desc = "Write and quit window (all with count)", expr = true }
+)
+map(
+  "n",
+  "ZQ",
+  "v:count ? ':<c-u>qa!<cr>' : '@_ZQ'",
+  { desc = "Quit (all with count)", expr = true }
+)
+map("n", "ZT", "<cmd>tabclose<cr>", { silent = true, desc = "Close current tab" })
 
 --
 -- Lsp & Diagnostics

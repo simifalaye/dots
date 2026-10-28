@@ -3,7 +3,17 @@ local lazy = require("utils.lazy")
 lazy.now(function()
   vim.pack.add({
     { src = "https://github.com/folke/tokyonight.nvim" },
+    { src = "https://github.com/mcauley-penney/techbase.nvim" },
   })
+  -- require("techbase").setup({
+  --   italic_comments = false,
+  --   transparent = false,
+  --   hl_overrides = {
+  --     Changed = { bg = "" },
+  --   },
+  -- })
+  -- vim.cmd.colorscheme("techbase")
+
   require("tokyonight").setup({
     style = "night", -- The theme comes in three styles, `storm`, a darker variant `night` and `day`
     light_style = "day", -- The theme is used when the background is set to light

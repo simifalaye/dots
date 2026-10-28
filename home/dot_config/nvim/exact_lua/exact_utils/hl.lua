@@ -43,7 +43,7 @@ function M.normalize_fg_or_bg(attr_type, fbg, default)
       return M.get(0, {
         name = fbg,
         winhl_link = false,
-      })[attr_type]
+      })[attr_type] or default
     end
     if fbg:match("^#%x%x%x%x%x%x$") then
       if attr_type:match("^cterm") then

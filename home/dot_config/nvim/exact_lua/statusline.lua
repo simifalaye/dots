@@ -16,8 +16,10 @@ local function option(buf, name)
 end
 
 local set_hl_groups = function()
-  local basefg = hl.normalize_fg_or_bg("fg", "StatusLine", "#ffffff")
-  local basebg = hl.normalize_fg_or_bg("bg", "StatusLine", "#000000")
+  local normalfg = hl.normalize_fg_or_bg("fg", "Normal", "#ffffff")
+  local normalbg = hl.normalize_fg_or_bg("bg", "Normal", "#000000")
+  local basefg = hl.normalize_fg_or_bg("fg", "StatusLine", normalfg)
+  local basebg = hl.normalize_fg_or_bg("bg", "StatusLine", normalbg)
   for group, opts in pairs({
     ModeNormal = { fg = basebg, bg = basefg },
     ModePending = { fg = basebg, bg = hl.normalize_fg_or_bg("fg", "Comment", "#636363") },

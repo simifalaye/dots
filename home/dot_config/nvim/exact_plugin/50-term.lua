@@ -44,6 +44,9 @@ lazy.now_if_args(function()
     end,
   })
 
+  -- Keymaps
+  vim.keymap.set("t", "<esc><esc>", "<C-\\><C-n>", { desc = "Leave insert" })
+
   -- Auto term
   -- Source: https://github.com/justinmk/config/blob/master/.config/nvim/lua/my/ctrl_s_shell.lua
   vim.cmd([[
@@ -152,7 +155,7 @@ lazy.now_if_args(function()
     let g:term_shell.prevwid = curwinid
     setlocal nobuflisted
   endfunc
-  nnoremap <M-;> <cmd>call <SID>auto_term(v:count, v:false)<CR>
-  nnoremap '<M-;> <cmd>call <SID>auto_term(v:count, v:true)<CR>
+  nnoremap <C-t> <cmd>call <SID>auto_term(v:count, v:false)<CR>
+  nnoremap '<C-t> <cmd>call <SID>auto_term(v:count, v:true)<CR>
   ]])
 end)

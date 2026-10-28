@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+required_tools=(nvim pstree realpath ss fzf)
+missing=()
+
+for tool in "${required_tools[@]}"; do
+    if ! command -v "$tool" &> /dev/null; then
+        missing+=("$tool")
+    fi
+done
+
+if [ "${#missing[@]}" -ne 0 ]; then
+    echo "$0: error: missing required tools: ${missing[*]}" >&2
+    exit 1
+fi
+
+attach="false"
+
+if [[ "$1" =~ ^-a$|^--attach$ ]]; then
+    attach="true"
+fi
+
+if pstree -s $$ | grep -q nvim; then
+    # inside neovim
+    if [ "$attach" = "true" ]; then
+        echo "$0: error: cannot attach: already inside neovim" >&2
+        exit 1
+    fi
+
+    if [ "$#" -ne "0" ]; then
+        realpath --zero "$@" | xargs -0 -n1 nvim --server "$NVIM" --remote
+    fi
+    exit
+fi
+
+# outside neovim
+if [ "$attach" != "true" ]; then
+    if [ "$#" -eq "0" ]; then
+        nvim +terminal --startuptime /tmp/nvimstartup
+        exit
+    fi
+
+    nvim "$@" --startuptime /tmp/nvimstartup
+    exit
+fi
+
+sockets=$(ss -xl 2> /dev/null | awk '/nvim/ { print $5 }')
+if [ -z "$sockets" ]; then
+    echo "$0: error: no neovim sockets found" >&2
+    exit 1
+fi
+
+# if only one socket
+if [ "$(printf "%s\n" "$sockets" | wc -l)" -eq 1 ]; then
+    nvim --server "$sockets" --remote-ui
+    exit
+fi
+
+# multiple sockets found
+selected=$(fzf <<< "$sockets")
+if ! [ -S "$selected" ]; then
+    exit
+fi
+
+nvim --server "$selected" --remote-ui
