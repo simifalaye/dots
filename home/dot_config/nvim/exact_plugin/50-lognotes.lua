@@ -16,7 +16,12 @@ local default_notes_dir = vim.env.NOTES_DIR or vim.fs.joinpath(vim.env.HOME, "no
 ---@field dir? string
 ---@field script? string
 
----@type LogNotesOpts
+---@class LogNotesConfig
+---@field disable boolean
+---@field dir string
+---@field script string
+
+---@type LogNotesConfig
 local default_config = {
   disable = false,
   dir = default_notes_dir,
@@ -27,7 +32,7 @@ local default_config = {
 vim.g.notes = vim.g.notes
 
 --- Get configuration
----@return LogNotesOpts
+---@return LogNotesConfig
 local function get_config()
   local opts = type(vim.g.notes) == "function" and vim.g.notes() or vim.g.notes or {}
   local config = vim.tbl_deep_extend("force", default_config, opts)
@@ -128,75 +133,97 @@ function M.capture()
     return
   end
 
-  -- Open a new tab and set its local working directory.
+  -- Open a new tab and set its local working directory
   vim.cmd.tabnew()
-  vim.cmd.lcd(vim.fn.fnameescape(get_config().dir))
+  vim.cmd.lcd(vim.fn.fnameescape(notes_dir))
 
   open_file(tmpfile)
 
   local bufnr = vim.api.nvim_get_current_buf()
+  local winid = vim.api.nvim_get_current_win()
   local tabpage = vim.api.nvim_get_current_tabpage()
 
-  local captured = false
   local augroup =
     vim.api.nvim_create_augroup("LogNotesCapture" .. bufnr, { clear = true })
+
+  local cleanup_done = false
+  local capture_done = false
+  local closing = false
+
+  local function cleanup()
+    if cleanup_done then
+      return
+    end
+    cleanup_done = true
+
+    pcall(vim.fn.delete, tmpfile)
+    if vim.api.nvim_buf_is_valid(bufnr) then
+      pcall(vim.api.nvim_buf_delete, bufnr, { force = true })
+    end
+    pcall(vim.api.nvim_clear_autocmds, { group = augroup })
+  end
+
+  -- Close the capture tab after the current write/autocmd cycle
+  local function close_capture_tab()
+    if closing then
+      return
+    end
+    closing = true
+
+    vim.schedule(function()
+      if vim.api.nvim_tabpage_is_valid(tabpage) then
+        local tabs = vim.api.nvim_list_tabpages()
+
+        if #tabs > 1 then
+          local tabnr = vim.api.nvim_tabpage_get_number(tabpage)
+          pcall(vim.cmd.tabclose, tabnr)
+        end
+      end
+
+      cleanup()
+    end)
+  end
+
+  -- Successful write: capture the note, then close the capture tab
   vim.api.nvim_create_autocmd("BufWritePost", {
     group = augroup,
     buffer = bufnr,
-    once = true,
     callback = function()
-      if captured then
+      if capture_done or cleanup_done then
         return
       end
-      captured = true
-
-      if not vim.api.nvim_buf_is_valid(bufnr) then
-        return
-      end
-
-      -- Save changes if necessary.
-      if vim.bo[bufnr].modified then
-        vim.api.nvim_buf_call(bufnr, function()
-          vim.cmd("silent write")
-        end)
-      end
+      capture_done = true
 
       local ok, err = pcall(execute_notes, { "capture", tmpfile })
-
-      vim.cmd.tabclose()
-
       if ok then
         vim.notify("Note captured", vim.log.levels.INFO)
       else
-        vim.notify(err, vim.log.levels.ERROR)
+        vim.notify(tostring(err), vim.log.levels.ERROR)
+      end
+
+      close_capture_tab()
+    end,
+  })
+  -- If the buffer is deleted or wiped out independently, clean up
+  vim.api.nvim_create_autocmd({ "BufDelete", "BufWipeout" }, {
+    group = augroup,
+    buffer = bufnr,
+    callback = cleanup,
+  })
+  -- Closing the capture window without writing must not capture the note
+  vim.api.nvim_create_autocmd("WinClosed", {
+    group = augroup,
+    pattern = tostring(winid),
+    callback = function()
+      if not capture_done then
+        cleanup()
       end
     end,
   })
-  vim.api.nvim_create_autocmd({
-    "BufDelete",
-    "BufWipeout",
-    "TabClosedPre",
-    "VimLeavePre",
-  }, {
+  -- Always clean up when Neovim exits
+  vim.api.nvim_create_autocmd("VimLeavePre", {
     group = augroup,
-    callback = function(ev)
-      local function cleanup()
-        pcall(vim.fn.delete, tmpfile)
-        pcall(vim.api.nvim_buf_delete, bufnr, { force = true })
-        pcall(vim.api.nvim_del_augroup, augroup)
-      end
-
-      if ev.event == "VimLeavePre" then
-        cleanup()
-        return
-      end
-
-      local t = vim.api.nvim_get_current_tabpage()
-      if t ~= tabpage then
-        return
-      end
-      vim.schedule(cleanup)
-    end,
+    callback = cleanup,
   })
 end
 
@@ -228,80 +255,74 @@ function M.review(args)
 
     vim.ui.select(tags, {
       prompt = "Select tags to review (Tab to multi-select): ",
-    }, function(choice, _)
+    }, function(choice)
       if choice then
         M.review({ choice })
       end
     end)
-  else
-    local cmd = { "review" }
-    vim.list_extend(cmd, args)
 
-    local output = execute_notes(cmd)
-    if output == "" or output:match("^No entries found") then
-      vim.notify(
-        "No entries found for tags: " .. table.concat(args, ", "),
-        vim.log.levels.INFO
-      )
+    return
+  end
+
+  local cmd = { "review" }
+  vim.list_extend(cmd, args)
+
+  local output = execute_notes(cmd)
+  if output == "" or output:match("^No entries found") then
+    vim.notify(
+      "No entries found for tags: " .. table.concat(args, ", "),
+      vim.log.levels.INFO
+    )
+    return
+  end
+
+  -- Open a new tab and set its local working directory
+  vim.cmd.tabnew()
+  vim.cmd.lcd(vim.fn.fnameescape(get_config().dir))
+
+  local bufnr = vim.api.nvim_get_current_buf()
+  local winid = vim.api.nvim_get_current_win()
+  local lines = get_lines(output)
+  local bufname = ("%s_%d"):format(args[1], vim.uv.hrtime())
+
+  vim.cmd.file(bufname)
+
+  vim.bo[bufnr].swapfile = false
+  vim.bo[bufnr].filetype = "markdown"
+  vim.bo[bufnr].modifiable = true
+
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+
+  vim.bo[bufnr].modifiable = false
+  vim.bo[bufnr].readonly = true
+  vim.bo[bufnr].modified = false
+
+  local augroup = vim.api.nvim_create_augroup("LogNotesReview" .. bufnr, { clear = true })
+
+  local cleanup_done = false
+
+  local function cleanup()
+    if cleanup_done then
       return
     end
+    cleanup_done = true
 
-    -- Open a new tab and set its local working directory.
-    vim.cmd.tabnew()
-    vim.cmd.lcd(vim.fn.fnameescape(get_config().dir))
-
-    -- Set up buffer
-    local bufnr = vim.api.nvim_get_current_buf()
-    local tabpage = vim.api.nvim_get_current_tabpage()
-    local lines = get_lines(output)
-    local bufname = ("%s_%d"):format(args[1], vim.loop.hrtime())
-    vim.cmd.file(bufname)
-    vim.bo[bufnr].swapfile = false
-    vim.bo[bufnr].filetype = "markdown"
-    vim.bo[bufnr].modified = true
-
-    -- Write output and make it non-modifiable
-    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-    vim.bo[bufnr].modifiable = false
-    vim.bo[bufnr].readonly = true
-    vim.bo[bufnr].modified = false
-
-    local bufs = { [bufnr] = true }
-    local augroup =
-      vim.api.nvim_create_augroup("user.plugin.lognotes.review-" .. args[1], {})
-    vim.api.nvim_create_autocmd("BufEnter", {
-      group = augroup,
-      callback = function(ev)
-        local t = vim.api.nvim_get_current_tabpage()
-        if t ~= tabpage then
-          return
-        end
-        bufs[ev.buf] = true
-      end,
-    })
-    vim.api.nvim_create_autocmd({ "TabClosedPre", "VimLeavePre" }, {
-      group = augroup,
-      callback = function(ev)
-        local function cleanup()
-          for b, _ in pairs(bufs) do
-            pcall(vim.api.nvim_buf_delete, b, { force = true })
-          end
-          pcall(vim.api.nvim_del_augroup, augroup)
-        end
-
-        if ev.event == "VimLeavePre" then
-          cleanup()
-          return
-        end
-
-        local t = vim.api.nvim_get_current_tabpage()
-        if t ~= tabpage then
-          return
-        end
-        vim.schedule(cleanup)
-      end,
-    })
+    if vim.api.nvim_buf_is_valid(bufnr) then
+      pcall(vim.api.nvim_buf_delete, bufnr, { force = true })
+    end
+    pcall(vim.api.nvim_del_augroup_by_id, augroup)
   end
+  -- Clean up when the review window closes
+  vim.api.nvim_create_autocmd("WinClosed", {
+    group = augroup,
+    pattern = tostring(winid),
+    callback = cleanup,
+  })
+  -- Clean up when Neovim exits
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    group = augroup,
+    callback = cleanup,
+  })
 end
 
 --- LogNotes: rename-tag

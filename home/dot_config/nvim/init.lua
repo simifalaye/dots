@@ -687,7 +687,7 @@ map("n", "<leader>p", function()
 end, { desc = "Find plugin file" })
 
 -- Text objects
-if 0 ~= 1 then
+if vim.fn.has("nvim-0.13") ~= 1 then
   map("x", "il", [[<Esc>^vg_]], { desc = "inner line" })
   map("o", "il", [[<cmd>normal! ^vg_<CR>]], { desc = "inner line" })
   map("x", "al", [[gg0oG$]], { desc = "all lines" })
