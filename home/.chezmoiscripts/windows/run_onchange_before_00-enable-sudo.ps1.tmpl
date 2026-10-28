@@ -1,0 +1,34 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$ErrorActionPreference = 'Stop'
+
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
+
+$sudoKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo'
+$sudoMode = Get-ItemPropertyValue -LiteralPath $sudoKey -Name 'Enabled' -ErrorAction SilentlyContinue
+if ($sudoMode -eq 3) {
+    Write-Info 'Windows sudo is already enabled in inline mode.'
+    return
+}
+
+if (-not $isAdmin) {
+    Write-Info 'Elevating to enable Windows sudo...'
+
+    $process = Start-Process `
+        -FilePath 'powershell.exe' `
+        -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" `
+        -Verb RunAs `
+        -Wait `
+        -PassThru
+
+    exit $process.ExitCode
+}
+
+New-Item -Path $sudoKey -Force | Out-Null
+# Windows sudo mode 3 is inline mode.
+New-ItemProperty -LiteralPath $sudoKey -Name 'Enabled' -PropertyType DWord -Value 3 -Force | Out-Null
+
+{{ end -}}

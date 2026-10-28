@@ -7,14 +7,10 @@ $ErrorActionPreference = 'Stop'
 $lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
 . $lib
 
-if (-not $gsudo) {
-  throw "Cannot get admin privileges which are required to run this script"
-}
-
 if (-not $isAdmin) {
-    Write-Info "Elevating via gsudo..."
+    Write-Info "Elevating via sudo..."
 
-    & $gsudo.FullName powershell.exe `
+    sudo powershell.exe `
         -NoProfile `
         -ExecutionPolicy Bypass `
         -File $PSCommandPath

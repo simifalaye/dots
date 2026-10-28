@@ -7,10 +7,20 @@ $ErrorActionPreference = 'Stop'
 $lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
 . $lib
 
+if (-not $isAdmin) {
+    Write-Info "Elevating via sudo..."
+
+    sudo powershell.exe `
+        -NoProfile `
+        -ExecutionPolicy Bypass `
+        -File $PSCommandPath
+
+    exit $LASTEXITCODE
+}
+
 {{ $packages := list
     "7zip.7zip"
     "Chocolatey.Chocolatey"
-    "gerardog.gsudo"
     "Git.Git"
     "GitHub.cli"
     "Microsoft.Sysinternals.Ctrl2Cap"
@@ -30,6 +40,7 @@ WingetInstall -AppIds @(
 
 {{ $upackages := list
     "equalsraf.win32yank"
+    "gerardog.gsudo"
     "wez.wezterm"
     "Microsoft.PowerToys"
     "Neovide.Neovide"
