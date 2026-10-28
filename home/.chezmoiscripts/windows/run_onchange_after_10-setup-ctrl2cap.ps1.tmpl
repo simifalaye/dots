@@ -1,0 +1,37 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$ErrorActionPreference = 'Stop'
+
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
+
+if (-not $gsudo) {
+    throw "Cannot get admin privileges which are required to run this script"
+}
+
+if (-not $isAdmin) {
+    Write-Info "Elevating via gsudo..."
+
+    & $gsudo.FullName powershell.exe `
+        -NoProfile `
+        -ExecutionPolicy Bypass `
+        -File $PSCommandPath
+
+    exit $LASTEXITCODE
+}
+
+$ctrl2cap = GetExePath `
+    -Directories @(
+        (Join-Path $env:LOCALAPPDATA 'Microsoft\WinGet\Links'),
+        (Join-Path $env:LOCALAPPDATA 'Microsoft\WinGet\Packages')
+    ) `
+    -ExeName @('ctrl2cap.exe')
+if (-not $ctrl2cap) {
+    throw 'Could not find ctrl2cap.exe.'
+}
+
+& $ctrl2cap /install /force
+
+{{ end -}}

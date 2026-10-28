@@ -2,36 +2,44 @@
 
 {{ if (and (not .ephemeral) (not .headless)) -}}
 
-function Install-AppIfMissing {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string[]]$AppIds
-    )
+$ErrorActionPreference = 'Stop'
 
-    foreach ($AppId in $AppIds) {
-        $isInstalled = winget list --id $AppId 2>$null | Select-String $AppId
-
-        if (-not $isInstalled) {
-            Write-Host "Installing $AppId..."
-            winget install --id $AppId --accept-package-agreements --accept-source-agreements
-        }
-    }
-}
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
 
 {{ $packages := list
+    "7zip.7zip"
+    "Chocolatey.Chocolatey"
+    "gerardog.gsudo"
     "Git.Git"
     "GitHub.cli"
+    "Microsoft.Sysinternals.Ctrl2Cap"
     "Alacritty.Alacritty"
-    "equalsraf.win32yank"
+    "glzr-io.glazewm"
     "jqlang.jq"
-    "Flow-Launcher.Flow-Launcher"
     "LibreWolf.LibreWolf"
     "Microsoft.WindowsTerminal" -}}
 
-Write-Host "Installing packages..." -ForegroundColor Cyan
+Write-Info "Installing packages..."
 
-Install-AppIfMissing -AppIds @(
+WingetInstall -AppIds @(
 {{ range $packages -}}
+    "{{ . }}"
+{{ end -}}
+)
+
+{{ $upackages := list
+    "equalsraf.win32yank"
+    "wez.wezterm"
+    "Microsoft.PowerToys"
+    "Neovide.Neovide"
+    "Dropbox.Dropbox"
+    "Flow-Launcher.Flow.Launcher" -}}
+
+Write-Info "Unstalling unneeded packages..."
+
+WingetUninstall -AppIds @(
+{{ range $upackages -}}
     "{{ . }}"
 {{ end -}}
 )

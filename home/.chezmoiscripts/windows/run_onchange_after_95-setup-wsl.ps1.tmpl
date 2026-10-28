@@ -1,0 +1,8 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$script = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\setup-wsl.ps1'
+& $script
+
+{{ end -}}

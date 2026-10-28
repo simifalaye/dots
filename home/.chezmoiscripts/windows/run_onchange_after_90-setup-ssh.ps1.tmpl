@@ -1,14 +1,19 @@
 # vim: ft=ps1
 
+$ErrorActionPreference = 'Stop'
+
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
+
 $sshEmail = "{{ .email }}"
 $sshKeyPath = "$HOME\.ssh\id_ed25519"
 $dotfilesDir = "{{ .chezmoi.workingTree }}"
 
-Write-Host "Checking SSH key setup..." -ForegroundColor Cyan
+Write-Info "Checking SSH key setup..."
 
 # Generate SSH Key if missing
 if (-not (Test-Path $sshKeyPath)) {
-    Write-Host "No SSH key found. Generating ed25519 key..." -ForegroundColor Yellow
+    Write-Info "No SSH key found. Generating ed25519 key..."
     New-Item -ItemType Directory -Path "$HOME\.ssh" -Force | Out-Null
     ssh-keygen -t ed25519 -C $sshEmail -f $sshKeyPath -N '""'
 }
@@ -17,7 +22,7 @@ if (-not (Test-Path $sshKeyPath)) {
 if (Get-Command gh -ErrorAction SilentlyContinue) {
     $ghAuthStatus = gh auth status 2>&1
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Authenticating with GitHub CLI to register SSH key..." -ForegroundColor Yellow
+        Write-Info "Authenticating with GitHub CLI to register SSH key..."
         # Interactively authenticates and uploads the public key to your GitHub account
         gh auth login --web -h github.com -p ssh -w
         gh ssh-key add "${sshKeyPath}.pub" --title "Windows-$(hostname)"
@@ -29,7 +34,7 @@ if (Test-Path "$dotfilesDir\.git") {
     $currentRemote = git -C "$dotfilesDir" remote get-url origin
     if ($currentRemote -like "https://github.com/*") {
         $sshRemote = $currentRemote -replace "https://github.com/", "git@github.com:"
-        Write-Host "Converting chezmoi Git origin to SSH: $sshRemote" -ForegroundColor Green
+        Write-Info "Converting chezmoi Git origin to SSH: $sshRemote"
         git -C "$dotfilesDir" remote set-url origin $sshRemote
     }
 }

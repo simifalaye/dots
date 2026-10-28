@@ -2,6 +2,9 @@
 
 {{ if (and (not .ephemeral) (not .headless)) -}}
 
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
+
 $fonts = @(
     'jetbrains-mono'
     'fira-code'
@@ -18,11 +21,11 @@ $missingFonts = foreach ($font in $fonts) {
 }
 
 if (-not $missingFonts) {
-    Write-Host 'All Nerd Fonts are already installed.'
+    Write-Info 'All Nerd Fonts are already installed.'
     return
 }
 
-Write-Host "Installing Nerd Fonts: $($missingFonts -join ', ')..."
+Write-Info "Installing Nerd Fonts: $($missingFonts -join ', ')..."
 
 & ([scriptblock]::Create(
     (Invoke-WebRequest -UseBasicParsing 'https://to.loredo.me/Install-NerdFont.ps1').Content

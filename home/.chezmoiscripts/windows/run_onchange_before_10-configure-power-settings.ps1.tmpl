@@ -4,15 +4,22 @@
 
 $ErrorActionPreference = 'Stop'
 
-# This script modifies machine-wide power settings.
-$isAdministrator = (
-    [Security.Principal.WindowsPrincipal]::new(
-        [Security.Principal.WindowsIdentity]::GetCurrent()
-    )
-).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
 
-if (-not $isAdministrator) {
-    throw 'This script must be run as Administrator.'
+if (-not $gsudo) {
+    throw "Cannot get admin privileges which are required to run this script"
+}
+
+if (-not $isAdmin) {
+    Write-Info "Elevating via gsudo..."
+
+    & $gsudo.FullName powershell.exe `
+        -NoProfile `
+        -ExecutionPolicy Bypass `
+        -File $PSCommandPath
+
+    exit $LASTEXITCODE
 }
 
 function Get-ActivePowerScheme {
@@ -64,11 +71,11 @@ function Get-ActiveStandbyTimeout {
         -ErrorAction SilentlyContinue
 }
 
-Write-Host "Configuring power settings..."
+Write-Info "Configuring power settings..."
 
 # Disable hibernation.
 if (Get-HibernationEnabled) {
-    Write-Host 'Disabling hibernation...'
+    Write-Info 'Disabling hibernation...'
 
     powercfg.exe /hibernate off
 
@@ -81,7 +88,7 @@ if (Get-HibernationEnabled) {
 $standbySeconds = Get-ActiveStandbyTimeout
 
 if ($standbySeconds -ne 86400) {
-    Write-Host 'Setting AC standby timeout to 24 hours...'
+    Write-Info 'Setting AC standby timeout to 24 hours...'
 
     powercfg.exe /change /standby-timeout-ac 1440
 

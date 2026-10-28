@@ -1,0 +1,39 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$ErrorActionPreference = 'Stop'
+
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
+
+$startupFolder = [Environment]::GetFolderPath('Startup')
+$shortcutPath = Join-Path $startupFolder 'keypirinha.lnk'
+
+if (Test-Path -LiteralPath $shortcutPath) {
+    Write-Info 'keypirinha startup shortcut already exists.'
+    exit 0
+}
+
+$keypirinha = GetExePath `
+    -Directories @(
+        (Join-Path $env:ProgramData 'chocolatey\bin')
+    ) `
+    -ExeName @('keypirinha.exe')
+if (-not $keypirinha) {
+    throw 'Could not find keypirinha.exe.'
+}
+
+$Shell = New-Object -ComObject WScript.Shell
+$shortcut = $Shell.CreateShortcut($shortcutPath)
+$shortcut.TargetPath = $keypirinha.FullName
+$shortcut.WorkingDirectory = $keypirinha.DirectoryName
+$shortcut.Description = 'Start keypirinha at login'
+$shortcut.Save()
+
+Write-Info "Created shortcut: $shortcutPath"
+
+Write-Info "Starting Keypirinha"
+& $keypirinha.FullName
+
+{{ end -}}

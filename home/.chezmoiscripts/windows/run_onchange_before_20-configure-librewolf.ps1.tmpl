@@ -1,6 +1,10 @@
 # vim: ft=ps1
 
-$script = Join-Path '{{ .chezmoi.workingTree }}' 'scripts\windows\setup-librewolf-extension.ps1'
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$script = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\setup-librewolf-extensions.ps1'
 
 # Install extensions
 & $script -AddonId 'vimium-c@gdh1995.cn'
+
+{{ end -}}

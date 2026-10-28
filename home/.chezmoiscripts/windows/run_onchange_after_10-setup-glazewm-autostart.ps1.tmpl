@@ -1,0 +1,40 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$ErrorActionPreference = 'Stop'
+
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
+
+$startupFolder = [Environment]::GetFolderPath('Startup')
+$shortcutPath = Join-Path $startupFolder 'GlazeWM.lnk'
+
+if (Test-Path -LiteralPath $shortcutPath) {
+    Write-Info 'GlazeWM startup shortcut already exists.'
+    exit 0
+}
+
+$glazewm = GetExePath `
+    -Directories @(
+        (Join-Path $env:ProgramFiles 'glzr.io\GlazeWM'),
+        (Join-Path $env:LOCALAPPDATA 'Microsoft\WinGet\Packages')
+    ) `
+    -ExeName @('glazewm.exe')
+if (-not $glazewm) {
+    throw 'Could not find glazewm.exe.'
+}
+
+$Shell = New-Object -ComObject WScript.Shell
+$shortcut = $Shell.CreateShortcut($shortcutPath)
+$shortcut.TargetPath = $glazewm.FullName
+$shortcut.WorkingDirectory = $glazewm.DirectoryName
+$shortcut.Description = 'Start GlazeWM at login'
+$shortcut.Save()
+
+Write-Info "Created shortcut: $shortcutPath"
+
+Write-Info "Starting glazewm"
+& $glazewm
+
+{{ end -}}

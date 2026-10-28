@@ -5,6 +5,9 @@ live_config_reload = true
 working_directory = "None" # Inherit from parent
 import = [
   "themes/tokyonight_night.toml",
+  # "themes/techbase.toml",
+  # TODO: Load local theme
+  # "theme.toml",
   # Load local config
   "alacritty-local.toml",
 ]
@@ -13,6 +16,14 @@ import = [
 padding = { x = 0, y = 0 }
 dynamic_padding = true
 option_as_alt = "Both"
+opacity = 1.0
+blur = false
+
+[cursor]
+# Simple beam for the lowest latency visual feedback
+style = { shape = "Beam", blinking = "On" }
+blink_interval = 400
+thickness = 0.15
 
 [font]
 normal = { family = "JetBrainsMono Nerd Font", style = "Regular" }
@@ -21,9 +32,13 @@ italic = { family = "JetBrainsMono Nerd Font", style = "Italic" }
 bold_italic = { family = "JetBrainsMono Nerd Font", style = "Bold Italic" }
 size = 14
 
+[terminal]
+shell = { program = "wsl" }
+
 [keyboard]
 bindings = [
   {key = "Space", mods = "Control", chars = "\u0000"},
+  {key = "Key6", mods = "Control", chars = "\u001e"},
 ]
 
 [env]

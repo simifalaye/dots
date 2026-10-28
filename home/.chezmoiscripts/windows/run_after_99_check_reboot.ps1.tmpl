@@ -1,0 +1,9 @@
+# vim: ft=ps1
+
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
+
+$RebootStatus = Test-PendingReboot
+if ($RebootStatus.Pending) {
+    Write-Warn "A restart is pending: $($RebootStatus.Reason)"
+}

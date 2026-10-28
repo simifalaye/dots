@@ -1,0 +1,72 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$ErrorActionPreference = 'Stop'
+
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
+
+if (-not $gsudo) {
+  throw "Cannot get admin privileges which are required to run this script"
+}
+
+if (-not $isAdmin) {
+    Write-Info "Elevating via gsudo..."
+
+    & $gsudo.FullName powershell.exe `
+        -NoProfile `
+        -ExecutionPolicy Bypass `
+        -File $PSCommandPath
+
+    exit $LASTEXITCODE
+}
+
+# Setup theme watcher
+$taskName = "Alacritty Theme Watcher"
+$script = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\alacritty-theme-watcher.ps1'
+
+function Start-ThemeWatcher {
+  Start-ScheduledTask -TaskName $taskName
+  Write-Info "Started task '$taskName'."
+}
+
+function Setup-ThemeSwitcher {
+  if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
+    Write-Info "Scheduled task '$taskName' already exists."
+    Start-ThemeWatcher
+    return
+  }
+
+  $action = New-ScheduledTaskAction `
+    -Execute "powershell.exe" `
+    -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$script`""
+
+  $trigger = New-ScheduledTaskTrigger -AtLogOn
+
+  $principal = New-ScheduledTaskPrincipal `
+    -UserId $env:USERNAME `
+    -LogonType Interactive `
+    -RunLevel Highest
+
+  $settings = New-ScheduledTaskSettingsSet `
+    -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries
+
+  Register-ScheduledTask `
+    -TaskName $taskName `
+    -Action $action `
+    -Trigger $trigger `
+    -Principal $principal `
+    -Settings $settings `
+    -Description "Switch Alacritty theme based on Windows system theme"
+
+  Write-Info "Scheduled task '$taskName' created."
+
+  Start-ThemeWatcher
+}
+
+# TODO: Revisit
+# Setup-ThemeSwitcher
+
+{{ end -}}
