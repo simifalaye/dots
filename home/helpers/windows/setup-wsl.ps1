@@ -98,6 +98,8 @@ systemd=true
         throw "Failed to write Ubuntu /etc/wsl.conf (exit code $LASTEXITCODE)"
     }
 
+    setx WSLENV USERPROFILE/up
+
     Write-Host 'Ubuntu /etc/wsl.conf configured.'
 }
 
