@@ -8,7 +8,12 @@ $lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
 . $lib
 
 $sudoKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Sudo'
-$sudoMode = Get-ItemPropertyValue -LiteralPath $sudoKey -Name 'Enabled' -ErrorAction SilentlyContinue
+if (Test-Path -LiteralPath $sudoKey) {
+    $sudoProp = Get-ItemProperty -LiteralPath $sudoKey -Name 'Enabled' -ErrorAction SilentlyContinue
+    $sudoMode = $sudoProp.Enabled
+} else {
+    $sudoMode = $null
+}
 if ($sudoMode -eq 3) {
     Write-Info 'Windows sudo is already enabled in inline mode.'
     return

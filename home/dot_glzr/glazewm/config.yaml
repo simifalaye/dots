@@ -326,8 +326,8 @@ keybindings:
     bindings: ["ralt+b"]
   - commands: ['shell-exec explorer']
     bindings: ['ralt+e']
-  - commands: ['shell-exec start ms-settings:']
-    bindings: ['ralt+i']
+  - commands: ['shell-exec ms-settings:']
+    bindings: ['ralt+g']
   - commands: ['shell-exec alacritty.exe']
     bindings: ['ralt+s']
 
