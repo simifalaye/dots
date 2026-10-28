@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -u
+
+app="${1:-}"
+if [ -z "$app" ]; then
+  echo "usage: wapp <exe-basename-without-.exe>" >&2
+  exit 2
+fi
+
+path="$("$HOME/.local/bin/wwhere" "$app")"
+[ -n "$path" ] || exit 1
+
+shift
+exec "$path" "$@"

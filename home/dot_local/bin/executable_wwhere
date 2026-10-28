@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -u
+
+app="${1:-}"
+if [ -z "$app" ]; then
+  echo "usage: winpath <exe-name-without-.exe>" >&2
+  exit 2
+fi
+
+where_bin="/mnt/c/Windows/System32/where.exe"
+if [ ! -x "$where_bin" ]; then
+  echo "where.exe not found at $where_bin" >&2
+  exit 1
+fi
+if ! command -v wslupath &> /dev/null; then
+  echo "wslupath not installed" >&2
+  exit 1
+fi
+
+app="${app##*/}"
+app="${app%.exe}"
+app="${app%.EXE}"
+
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/wsl-win-paths"
+cache_file="$cache_dir/$app"
+
+mkdir -p "$cache_dir"
+
+if [ -f "$cache_file" ]; then
+  path="$(tr -d '\r' < "$cache_file")"
+  printf '%s\n' "$path"
+  exit 0
+fi
+
+path="$("$where_bin" "${app}.exe" 2>/dev/null | head -n 1 | tr -d '\r' || true)"
+if [ -z "$path" ]; then
+  echo "Could not find ${app}.exe in Windows PATH" >&2
+  exit 1
+fi
+
+path=$(wslupath "$path")
+
+# Cache for future invocations
+printf '%s\n' "$path" > "$cache_file"
+
+# Return path
+printf '%s\n' "$path"
