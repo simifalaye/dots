@@ -12,7 +12,9 @@
 
 ## Windows
 
-- Allow script execution: `Set-ExecutionPolicy Unrestricted`
+- Allow script execution:
+  - RemoteSigned: `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
+  - Unrestricted: `Set-ExecutionPolicy Unrestricted -Scope CurrentUser`
 
 # Install
 
