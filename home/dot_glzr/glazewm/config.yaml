@@ -330,4 +330,6 @@ keybindings:
     bindings: ['ralt+g']
   - commands: ['shell-exec alacritty.exe']
     bindings: ['ralt+s']
+  - commands: ['shell-exec powershell.exe']
+    bindings: ['ralt+c']
 
