@@ -5,6 +5,8 @@ local socket_prefix = "nvim."
 local socket_name_match = "nvim%.(.+)"
 local restart_message_file =
   vim.fs.joinpath(vim.fn.stdpath("state"), "mux_restart_message")
+local remembered_servers_file =
+  vim.fs.joinpath(vim.fn.stdpath("state"), "mux_servers.json")
 
 --
 -- Config
@@ -17,6 +19,8 @@ local cfg = {
   spawn_cmd = { vim.v.progpath },
   -- automatically disconnect unmanaged servers when switching away
   detach_unmanaged = true,
+  -- remember added servers so they can be started again later
+  remember_servers = true,
 }
 
 --
@@ -220,7 +224,8 @@ end
 --- Connect to session
 ---@param detach boolean
 ---@param cache table<string, mux.MuxSession>|nil
-function MuxSession:connect(detach, cache)
+---@param on_connect fun()|nil
+function MuxSession:connect(detach, cache, on_connect)
   if self.server and self.server.socket == vim.v.servername then
     return
   end
@@ -238,6 +243,9 @@ function MuxSession:connect(detach, cache)
         args = { socket },
         bang = detach == true,
       })
+    end
+    if on_connect then
+      on_connect()
     end
   end
 
@@ -305,6 +313,53 @@ end
 
 ---@type table<string, mux.MuxSession>
 local session_cache = {}
+local remembered_servers = {}
+
+local function save_remembered_servers()
+  if cfg.remember_servers then
+    vim.fn.writefile(
+      { vim.json.encode(vim.tbl_values(remembered_servers)) },
+      remembered_servers_file
+    )
+  end
+end
+
+local function sync_remembered_servers()
+  if not cfg.remember_servers then
+    return
+  end
+  local servers = {}
+  if vim.fn.filereadable(remembered_servers_file) == 1 then
+    local ok, decoded =
+      pcall(vim.json.decode, table.concat(vim.fn.readfile(remembered_servers_file), "\n"))
+    if not ok or type(decoded) ~= "table" then
+      return
+    end
+    for _, server in ipairs(decoded) do
+      if
+        type(server) == "table"
+        and type(server.name) == "string"
+        and type(server.dir) == "string"
+      then
+        servers[server.name] = server
+      end
+    end
+  end
+  remembered_servers = servers
+  for name, session in pairs(session_cache) do
+    if not session.server and not servers[name] then
+      session_cache[name] = nil
+    end
+  end
+  for name, server in pairs(servers) do
+    local session = session_cache[name]
+    if session and not session.server then
+      session.original_cwd = server.dir
+    else
+      session_cache[name] = session or MuxSession.new(name, server.dir)
+    end
+  end
+end
 
 --- Update session cache with new sessions and cleanup old sessions
 local function sync_session_cache()
@@ -324,18 +379,20 @@ local function sync_session_cache()
       local dir = vim.fs.normalize(vim.fs.dirname(socket))
       local name = socket:match("nvim%.(.+)")
 
-      if not session_cache[name] then
-        session_cache[name] = MuxSession.new(name, dir, {
-          ready = false,
-          socket = socket,
-          pid = -1,
-          start_time = 0,
-          last_accessed = 0,
-          last_updated = 0,
-          cwd = vim.env.HOME,
-          managed = dir == cfg.session_dir,
-          pending_update = false,
-        })
+      local session = session_cache[name]
+      if not session or not session.server then
+        session_cache[name] =
+          MuxSession.new(name, session and session.original_cwd or dir, {
+            ready = false,
+            socket = socket,
+            pid = -1,
+            start_time = 0,
+            last_accessed = 0,
+            last_updated = 0,
+            cwd = vim.env.HOME,
+            managed = dir == cfg.session_dir,
+            pending_update = false,
+          })
         session_cache[name]:ready()
       end
     end
@@ -350,6 +407,7 @@ local function sync_session_cache()
       end
     end
   end
+  sync_remembered_servers()
 end
 
 --- Fetch latest server data for each session
@@ -369,6 +427,9 @@ local function list_sessions(exclude_current)
 
   local sorted_sessions = vim.tbl_values(session_cache)
   table.sort(sorted_sessions, function(a, b)
+    if not a.server or not b.server then
+      return a.server ~= nil
+    end
     if vim.fs.normalize(a.server.socket) == vim.v.servername then
       return true
     end
@@ -379,7 +440,7 @@ local function list_sessions(exclude_current)
   end)
   if exclude_current == true then
     return vim.tbl_filter(function(s)
-      return s.server.socket ~= vim.v.servername
+      return (not s.server) or (s.server.socket ~= vim.v.servername)
     end, sorted_sessions)
   end
   return sorted_sessions
@@ -461,12 +522,15 @@ function M.add(dir, name)
     return
   end
 
+  sync_remembered_servers()
   if session_cache[name] then
     notify_error("Session '%s' already exists", name)
     return
   end
 
   session_cache[name] = MuxSession.new(name, dir)
+  remembered_servers[name] = { name = name, dir = dir }
+  save_remembered_servers()
   session_cache[name]:connect(should_detach(), session_cache)
 end
 
@@ -483,7 +547,7 @@ function M.switch(name)
       prompt = "Select session: ",
       format_item = function(item)
         ---@cast item mux.MuxSession
-        return item.name
+        return (item.server and "● " or "○ ") .. item.name
       end,
     }, function(value)
       if value and value ~= "" then
@@ -493,6 +557,7 @@ function M.switch(name)
     return
   end
 
+  sync_session_cache()
   -- Don't switch to current project
   local current = M.current()
   if current and name == current.name then
@@ -528,6 +593,57 @@ function M.switch_last()
   end
 end
 
+--- Detach a running session
+---@param name string? Session name
+function M.detach(name)
+  if not name or name == "" then
+    local sessions = vim.tbl_filter(function(session)
+      return session.server ~= nil
+    end, list_sessions())
+    if #sessions == 0 then
+      notify_info("No running sessions available")
+      return
+    end
+    vim.ui.select(sessions, {
+      prompt = "Detach session: ",
+      format_item = function(item)
+        ---@cast item mux.MuxSession
+        return item.name
+          .. (item.server.socket == vim.v.servername and " (current)" or "")
+      end,
+    }, function(value)
+      if value then
+        M.detach(value.name)
+      end
+    end)
+    return
+  end
+
+  sync_session_cache()
+  local session = session_cache[name]
+  if not session or not session.server then
+    notify_error("No running session exists named: %s", name)
+    return
+  end
+  if session.server.socket == vim.v.servername then
+    local previous = get_session_by_count(1)
+    if not previous then
+      notify_info("No previous session available")
+      return
+    end
+    local ok, err = pcall(MuxSession.connect, previous, false, session_cache, function()
+      session:detach()
+      session_cache[name] = nil
+    end)
+    if not ok then
+      notify_error(err)
+    end
+  else
+    session:detach()
+    session_cache[name] = nil
+  end
+end
+
 --- Delete a session
 ---@param name string? Session name
 function M.delete(name)
@@ -554,6 +670,7 @@ function M.delete(name)
     return
   end
 
+  sync_session_cache()
   local session = session_cache[name]
   if not session then
     notify_error("Session does not exist: ", session.name)
@@ -563,7 +680,9 @@ function M.delete(name)
   local choice =
     vim.fn.confirm(('Delete session "%s"?'):format(session.name), "&Yes\n&No")
   if choice == 1 then
-    if vim.v.servername == session.name then
+    remembered_servers[session.name] = nil
+    save_remembered_servers()
+    if session.server and vim.v.servername == session.server.socket then
       local last_session = get_session_by_count(1)
       if last_session then
         local ok, err = pcall(MuxSession.connect, last_session, true, session_cache)
@@ -710,6 +829,22 @@ lazy.now(function()
   end, {
     desc = "Switch to last mux session",
   })
+  vim.api.nvim_create_user_command("MuxDetach", function(opts)
+    M.detach(opts.args)
+  end, {
+    nargs = "?",
+    complete = function()
+      return vim.tbl_map(
+        function(item)
+          return item.name
+        end,
+        vim.tbl_filter(function(item)
+          return item.server ~= nil
+        end, list_sessions())
+      )
+    end,
+    desc = "Detach a running mux session",
+  })
   vim.api.nvim_create_user_command("MuxDelete", function(opts)
     M.delete(opts.args)
   end, {
@@ -742,7 +877,8 @@ lazy.now(function()
   vim.keymap.set("n", "<C-Space><Space>", "<cmd>MuxSwitchLast<CR>", { desc = "Last" })
   vim.keymap.set("n", "<C-Space>a", "<cmd>MuxAdd<CR>", { desc = "Add" })
   vim.keymap.set("n", "<C-Space>c", "<cmd>MuxCurrent<CR>", { desc = "Current" })
-  vim.keymap.set("n", "<C-Space>d", "<cmd>MuxDelete<CR>", { desc = "Delete" })
+  vim.keymap.set("n", "<C-Space>d", "<cmd>MuxDetach<CR>", { desc = "Detach" })
+  vim.keymap.set("n", "<C-Space>D", "<cmd>MuxDelete<CR>", { desc = "Delete" })
   vim.keymap.set("n", "<C-Space>q", "<cmd>MuxQuitAll<CR>", { desc = "Quit" })
   vim.keymap.set("n", "<C-Space>r", "<cmd>MuxRestart<CR>", { desc = "Restart" })
   vim.keymap.set("n", "<C-Space>s", "<cmd>MuxSwitch<CR>", { desc = "Switch" })
