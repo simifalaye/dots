@@ -53,6 +53,8 @@ $Settings = @(
     # Disables tips and suggestions shown while using Windows.
     @{ Path = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'; Name = 'SubscribedContent-338389Enabled'; Type = 'DWord'; Value = 0 }
 
+    # Enable support for long paths in Windows (recommended by komorebi)
+    @{ Path = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'; Name = 'LongPathsEnabled'; Type = 'DWord'; Value = 1 }
 
     #
     # Speech, Inking, and Typing

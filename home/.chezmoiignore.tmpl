@@ -13,11 +13,14 @@ helpers/**
 
 {{ if ne .chezmoi.os "windows" }}
 .chezmoiscripts/windows/**
+.config/yasb
+.config/whkdrc
 .librewolf
 .wslconfig
 .glzr/
 AppData/**
 Documents
+komorebi.json
 {{ else }}
 .chezmoiscripts/unix/**
 .bash_logout

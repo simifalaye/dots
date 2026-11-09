@@ -134,7 +134,7 @@ function WingetUninstall {
     )
 
     foreach ($AppId in $AppIds) {
-        $isInstalled = winget list --id $AppId 2>$null | Select-String $AppId
+        $isInstalled = winget list --id $AppId --all-versions 2>$null | Select-String $AppId
         if ($isInstalled) {
             Write-Host "Uninstalling $AppId..."
             winget uninstall --id $AppId

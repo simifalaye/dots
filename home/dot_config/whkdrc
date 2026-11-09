@@ -1,0 +1,88 @@
+.shell powershell
+
+# whkd
+# ralt + r                 : taskkill /f /im whkd.exe && start /b whkd # if shell is cmd
+ralt + r                 : taskkill /f /im whkd.exe; Start-Process whkd -WindowStyle hidden # if shell is pwsh / powershell
+ralt + shift + r         : komorebic reload-configuration
+ralt + vk_oem_2          : komorebic toggle-shortcuts # '/'
+
+# yasb
+ralt + s                 : yasbc toggle-bar
+ralt + shift + s         : taskkill /f /im yasb.exe; Start-Process yasb -WindowStyle hidden
+
+# Focus windows
+ralt + j                 : komorebic focus left
+ralt + k                 : komorebic focus down
+ralt + i                 : komorebic focus up
+ralt + l                 : komorebic focus right
+ralt + oem_4             : komorebic cycle-focus previous # oem_4 is [
+ralt + oem_6             : komorebic cycle-focus next # oem_6 is ]
+
+# Move windows
+ralt + shift + j         : komorebic move left
+ralt + shift + k         : komorebic move down
+ralt + shift + i         : komorebic move up
+ralt + shift + l         : komorebic move right
+ralt + shift + return    : komorebic promote
+
+# Stack windows
+ralt + ctrl + j          : komorebic stack left
+ralt + ctrl + k          : komorebic stack down
+ralt + ctrl + i          : komorebic stack up
+ralt + ctrl + l          : komorebic stack right
+ralt + ctrl + oem_1      : komorebic unstack # oem_1 is ;
+ralt + ctrl + oem_4      : komorebic cycle-stack previous # oem_4 is [
+ralt + ctrl + oem_6      : komorebic cycle-stack next # oem_6 is ]
+
+# Resize
+ralt + oem_plus          : komorebic resize-axis horizontal increase
+ralt + oem_minus         : komorebic resize-axis horizontal decrease
+ralt + shift + oem_plus  : komorebic resize-axis vertical increase
+ralt + shift + oem_minus : komorebic resize-axis vertical decrease
+
+# Manipulate windows
+ralt + m                 : komorebic toggle-monocle
+ralt + f                 : komorebic toggle-float
+ralt + c                 : komorebic close
+ralt + n                 : komorebic minimize
+
+# Window manager options
+ralt + w                 : komorebic retile
+ralt + p                 : komorebic toggle-pause
+
+# Layouts
+ralt + x                 : komorebic flip-layout horizontal
+ralt + y                 : komorebic flip-layout vertical
+
+# Workspaces
+ralt + 1                 : komorebic focus-workspace 0
+ralt + 2                 : komorebic focus-workspace 1
+ralt + 3                 : komorebic focus-workspace 2
+ralt + 4                 : komorebic focus-workspace 3
+ralt + 5                 : komorebic focus-workspace 4
+ralt + 6                 : komorebic focus-workspace 5
+ralt + 7                 : komorebic focus-workspace 6
+ralt + 8                 : komorebic focus-workspace 7
+ralt + vk_oem_5          : komorebic focus-last-workspace # '\'
+
+# Move windows across workspaces
+ralt + shift + 1         : komorebic move-to-workspace 0
+ralt + shift + 2         : komorebic move-to-workspace 1
+ralt + shift + 3         : komorebic move-to-workspace 2
+ralt + shift + 4         : komorebic move-to-workspace 3
+ralt + shift + 5         : komorebic move-to-workspace 4
+ralt + shift + 6         : komorebic move-to-workspace 5
+ralt + shift + 7         : komorebic move-to-workspace 6
+ralt + shift + 8         : komorebic move-to-workspace 7
+ralt + shift + vk_oem_5  : komorebic move-to-last-workspace # '\'
+
+# Send windows across workspaces
+ralt + ctrl + 1          : komorebic send-to-workspace 0
+ralt + ctrl + 2          : komorebic send-to-workspace 1
+ralt + ctrl + 3          : komorebic send-to-workspace 2
+ralt + ctrl + 4          : komorebic send-to-workspace 3
+ralt + ctrl + 5          : komorebic send-to-workspace 4
+ralt + ctrl + 6          : komorebic send-to-workspace 5
+ralt + ctrl + 7          : komorebic send-to-workspace 6
+ralt + ctrl + 8          : komorebic send-to-workspace 7
+ralt + ctrl + vk_oem_5   : komorebic send-to-last-workspace # '\'

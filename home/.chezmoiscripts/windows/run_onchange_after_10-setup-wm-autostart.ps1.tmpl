@@ -1,0 +1,73 @@
+# vim: ft=ps1
+
+{{ if (and (not .ephemeral) (not .headless)) -}}
+
+$ErrorActionPreference = 'Stop'
+
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
+
+$startupFolder = [Environment]::GetFolderPath('Startup')
+
+# Remove GlazeWM startup shortcut if present
+$glazeShortcut = Join-Path $startupFolder 'GlazeWM.lnk'
+if (Test-Path -LiteralPath $glazeShortcut) {
+    Remove-Item -LiteralPath $glazeShortcut -Force
+    Write-Info 'Removed GlazeWM startup shortcut.'
+}
+
+# Find Komorebi
+$komorebic = GetExePath `
+    -Directories @(
+        (Join-Path $env:ProgramFiles 'komorebi\bin')
+    ) `
+    -ExeName @('komorebic.exe')
+if (-not $komorebic) {
+    throw 'Could not find komorebic.exe.'
+}
+
+# Find YASB
+$yasb = GetExePath `
+    -Directories @(
+        (Join-Path $env:ProgramFiles 'YASB')
+    ) `
+    -ExeName @('yasb.exe')
+if (-not $yasb) {
+    throw 'Could not find yasb.exe.'
+}
+
+$Shell = New-Object -ComObject WScript.Shell
+
+# Create Komorebi startup shortcut
+$komorebiShortcutPath = Join-Path $startupFolder 'Komorebi.lnk'
+$shortcut = $Shell.CreateShortcut($komorebiShortcutPath)
+$shortcut.TargetPath = $komorebic.FullName
+$shortcut.Arguments = 'start --whkd --masir'
+$shortcut.WorkingDirectory = $komorebic.DirectoryName
+$shortcut.Description = 'Start Komorebi and whkd at login'
+$shortcut.Save()
+Write-Info "Created shortcut: $komorebiShortcutPath"
+
+# Create YASB startup shortcut
+$yasbShortcutPath = Join-Path $startupFolder 'YASB.lnk'
+$shortcut = $Shell.CreateShortcut($yasbShortcutPath)
+$shortcut.TargetPath = $yasb.FullName
+$shortcut.WorkingDirectory = $yasb.DirectoryName
+$shortcut.Description = 'Start YASB at login'
+$shortcut.Save()
+Write-Info "Created shortcut: $yasbShortcutPath"
+
+# Start Komorebi
+Write-Info 'Starting Komorebi with whkd...'
+Start-Process `
+    -FilePath $komorebic.FullName `
+    -ArgumentList 'start --whkd' `
+    -WorkingDirectory $komorebic.DirectoryName
+
+# Start YASB
+Write-Info 'Starting YASB...'
+Start-Process `
+    -FilePath $yasb.FullName `
+    -WorkingDirectory $yasb.DirectoryName
+
+{{ end -}}
