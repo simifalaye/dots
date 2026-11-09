@@ -1,7 +1,7 @@
 local lazy = require("utils.lazy")
 
 vim.g.canola = {
-  columns = { "type", "permissions", "size", "mtime", "icon" },
+  columns = { "type", "permissions", "size", "mtime", "icon", "git_status" },
   watch = true,
   hidden = { enabled = true, patterns = { "^%.%." }, always = {} }, -- hide files that start with ".."
   confirm = "delete",
@@ -17,6 +17,7 @@ vim.g.canola = {
 }
 vim.g.canola_ssh = {}
 vim.g.canola_trash = {}
+vim.g.canola_git = {}
 
 lazy.now_if_args(function()
   vim.pack.add({

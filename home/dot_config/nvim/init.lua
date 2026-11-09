@@ -423,15 +423,6 @@ end, {
 -- Keymaps
 --
 
--- Save
-map("n", "<C-s>", "<Cmd>silent! update | redraw<CR>", { desc = "Save" })
-map(
-  { "i", "x" },
-  "<C-s>",
-  "<Esc><Cmd>silent! update | redraw<CR>",
-  { desc = "Save and go to Normal mode" }
-)
-
 -- Move through wrapped lines
 map(
   { "n", "x" },

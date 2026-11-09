@@ -155,7 +155,7 @@ lazy.now_if_args(function()
     let g:term_shell.prevwid = curwinid
     setlocal nobuflisted
   endfunc
-  nnoremap <C-t> <cmd>call <SID>auto_term(v:count, v:false)<CR>
-  nnoremap '<C-t> <cmd>call <SID>auto_term(v:count, v:true)<CR>
+  nnoremap <C-s> <cmd>call <SID>auto_term(v:count, v:false)<CR>
+  nnoremap '<C-s> <cmd>call <SID>auto_term(v:count, v:true)<CR>
   ]])
 end)
