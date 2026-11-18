@@ -1,0 +1,25 @@
+# vim: ft=ps1
+
+$ErrorActionPreference = 'Stop'
+
+$lib = Join-Path '{{ .chezmoi.workingTree }}' 'home\helpers\windows\lib.ps1'
+. $lib
+
+# Add local bin to path
+$localBin = Join-Path $HOME ".local\bin"
+if (Test-Path $localBin) {
+    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    if (($userPath -split ';') -notcontains $localBin) {
+        $newPath = if ([string]::IsNullOrWhiteSpace($userPath)) {
+            $localBin
+        } else {
+            "$localBin;$userPath"
+        }
+
+        [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+
+        Write-Info "Added $localBin to Windows User PATH."
+    } else {
+        Write-Info "$localBin is already in Windows User PATH."
+    }
+}

@@ -2,15 +2,6 @@
 Set-StrictMode -Version Latest
 
 #
-# PATH
-#
-
-$localBin = Join-Path $HOME ".local\bin"
-if ((Test-Path $localBin) -and ($env:PATH -split ';' -notcontains $localBin)) {
-    $env:PATH = "$localBin;$env:PATH"
-}
-
-#
 # Functions
 #
 
